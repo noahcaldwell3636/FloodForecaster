@@ -7,7 +7,7 @@ time lapsed
     c- zip and disply the data on dash
 
 FINISHED:
-4. (waiting) reconfigure for new repository
+4. reconfigure for new repository
 
 2. add the forecasted scatterplot trace to graph
 1. return the forecasted dataset

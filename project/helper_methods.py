@@ -80,10 +80,14 @@ def fill_missing_levels(levels):
     return adjusted_levels
 
 
+
+
+
 def get_flood_data(xml_root, observed_or_forecast):
     elements = xml_root.findall(observed_or_forecast + '/datum')
     level = []
     time = []
+    # get xml data
     for datum in elements:
         datetime_UTC = datum.find('valid').text
         water_level = datum.find('primary').text # in feet
@@ -92,14 +96,22 @@ def get_flood_data(xml_root, observed_or_forecast):
         level.append(water_level)
         formatted_datetime = convert_to_datetime_EST(datetime_UTC)
         time.append(formatted_datetime)
+    # format xml data for dash
     if observed_or_forecast == 'observed':
         time.reverse()
         level.reverse()
+    elif observed_or_forecast == 'forecast':
+        time = fill_missing_time(time)
+        level = fill_missing_levels(level)
     else:
-        fill_missing_time(time)
-        fill_missing_levels(level)
+        raise ValueError("~Boone~ the get_flood_data method expects the 'observed' or 'forecast'.")
     data = list(zip(time, level))
     return pd.DataFrame(data, columns=['Time', 'Level'])
+
+
+
+
+
 
 
 def get_observed_data():
@@ -111,6 +123,13 @@ def get_observed_data():
 def get_forecast_data():
     xml_root = get_xml_root(url='https://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=rmdv2&output=xml')
     return get_flood_data(xml_root, "forecast")
+
+
+
+
+
+
+
 
 def get_custom_graph():
     # Create the graph with subplots
