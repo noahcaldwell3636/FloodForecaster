@@ -1,11 +1,14 @@
 OBJECTIVES:
 #####################################################################################
-4. reconfigure for new repository
 3. add missing data points to forecasted data so its size is proprotional to the
 time lapsed
-    - there is probs a function provided by plotly
+    a- time (output list complete)
+    b- levels (output list complete)
+    c- zip and disply the data on dash
 
 FINISHED:
+4. (waiting) reconfigure for new repository
+
 2. add the forecasted scatterplot trace to graph
 1. return the forecasted dataset
     - seperate out redundant lines of code into new methods from observed getter

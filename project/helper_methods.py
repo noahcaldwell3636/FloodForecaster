@@ -24,8 +24,60 @@ def get_xml_root(url):
     return xml_doc.getroot()
 
 
-def fill_missing_forecasted():
-    pass
+def fill_missing_time(time):
+    # compute the time fill points
+    adjusted_time = []
+    for six_hrs in time:
+        adjusted_time.append(six_hrs)
+        time_segments = six_hrs.split(" ")
+        date, hour, post = (time_segments[0], int(time_segments[1].split(":")[0]), time_segments[2])
+        minute = 0
+        # create and append fill points
+        for i in range(0,23): # 24, 15-minute intevals in six hours. Minus the last point as it is already accounted for.
+            # create fill minute and hours data
+            if minute == 45: # increment to next hour if 15 minutes away
+                minute = 0
+                # adjust for 12 hour clock
+                if hour == 12:
+                    hour == 1
+                else:
+                    hour += 1
+            else: # add 15 minutes
+                minute += 15
+            # format hour int for output
+            if hour <= 9:
+                hour_str = "0" + str(hour)
+            else:
+                hour_str = str(hour)            
+            # format minute int for output
+            if minute == 0:
+                minute_str = '00'
+            else:
+                minute_str = str(minute)
+            # add fill point
+            formatted_fill_point = date + " " + hour_str + ":" + minute_str + " " + post
+            adjusted_time.append(formatted_fill_point)
+    return adjusted_time
+
+def fill_missing_levels(levels):
+    adjusted_levels = []
+    for i in range(len(levels)):
+        current_level = float(levels[i])
+        adjusted_levels.append(str(current_level))
+        try:
+            next_level = float(levels[i+1])
+        except:
+            break
+        # compute rate of change per increment
+        points = 23 # 24, 15-minute segments in 6 hours. Minus the last point because it it the next point
+        rate_of_change = (1/23) * (next_level-current_level)
+        # create each fill point
+        fill_point = current_level + rate_of_change
+        adjusted_levels.append(str(fill_point))
+        for j in range(points-1): 
+            fill_point = fill_point + rate_of_change
+            adjusted_levels.append(str(fill_point))
+    return adjusted_levels
 
 
 def get_flood_data(xml_root, observed_or_forecast):
@@ -43,6 +95,9 @@ def get_flood_data(xml_root, observed_or_forecast):
     if observed_or_forecast == 'observed':
         time.reverse()
         level.reverse()
+    else:
+        fill_missing_time(time)
+        fill_missing_levels(level)
     data = list(zip(time, level))
     return pd.DataFrame(data, columns=['Time', 'Level'])
 
