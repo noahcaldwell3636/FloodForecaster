@@ -4,7 +4,8 @@ OBJECTIVES:
 time lapsed
     a- time (output list complete)
     b- levels (output list complete)
-    c- zip and disply the data on dash
+    c- zip and display the data on dash
+        d- create bridge data between observed and forecasted
 
 FINISHED:
 4. reconfigure for new repository
