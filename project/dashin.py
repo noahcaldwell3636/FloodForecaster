@@ -4,6 +4,15 @@ import plotly
 from dash.dependencies import Input, Output
 # MY IMPORTS
 from helper_methods import *
+from layout import *
+
+
+#################################################################################
+################################_GET_DATA_#######################################
+#################################################################################
+observed_data = get_observed_data()
+forecast_data = get_forecast_data()
+bridged_fore_data = bridge_to_fore(observed_data, forecast_data)
 
 
 ##################################################################################
@@ -16,7 +25,10 @@ app.layout = html.Div(
     html.Div([
         html.H4('James River Flood Forecast'),
         html.Div(id='live-update-text'),
-        create_flood_graph(),
+        create_flood_graph(
+            observed_df=observed_data,
+            forecast_df=bridged_fore_data
+        ),
         create_flood_interval(15)
     ])
 )

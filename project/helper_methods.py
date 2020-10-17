@@ -1,27 +1,30 @@
 from urllib.request import urlopen
 import xml.etree.ElementTree as ET
 import datetime
-from plotly.subplots import make_subplots
-import dash_core_components as dcc
 import pandas as pd
 
 
-def convert_xmlstr_to_datetime(datetime_str):
+def convert_str_to_datetime(datetime_str):
     """ 
     Converts datetime_str time from the xml doc to a datetime object
     """
     try:
-        time = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %I:%M:%S")
+        time = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %I:%M:%S %p")
     except:
-        time = datetime.datetime.strptime(datetime_str[:-6], "%Y-%m-%dT%H:%M:%S")
-
+        try:
+            time = datetime.datetime.strptime(datetime_str[:-6], "%Y-%m-%dT%H:%M:%S")
+        except:
+            try:
+                time = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+            except:
+                raise ValueError("~Boone~ this method is meant to convert string into datetime objects, +"
+                "in the following format \n %Y-%m-%d %I:%M:%S %p \n %Y-%m-%dT%H:%M:%S")
     dt = datetime.datetime(year=int(time.year), month=int(time.month), day=int(time.day), hour=int(time.hour), minute=int(time.minute))
     return dt
 
 
-def convert_datetime_to_str(dt):
-        return dt.strftime('%Y-%m-%d %I:%M:%S')
-
+def convert_datetime_to_formatted_str(dt):
+        return dt.strftime('%Y-%m-%d %I:%M:%S %p')
 
 def get_xml_root(url):
     # get xml object from the internet
@@ -30,7 +33,7 @@ def get_xml_root(url):
     return xml_doc.getroot()
 
 
-def bridge_obs_to_fore(observed_df, filled_time_df, patch_to_forecasted=False):
+def bridge_to_fore(observed_df, filled_forecast_df):
     """ 
     Returns a pandas dataframe of fill data accounting for the gap between the 
     end of the observed flood level data and the forecasted flood level data.
@@ -39,14 +42,12 @@ def bridge_obs_to_fore(observed_df, filled_time_df, patch_to_forecasted=False):
             concatination of both the bridge data and the forecasted data. Otherwise,
             the function will return a dataframe of just the bridge data.
     """
-
     # start of data bridge = obs_last_time
     obs_last_time = str(observed_df['Time'].iloc[-1])
-    obs_last_time = datetime.datetime.strptime(obs_last_time, "%Y-%m-%d %I:%M:%S")
+    obs_last_time = convert_str_to_datetime(obs_last_time)
     # end of data bridge = for_fist_time
-    fore_first_time = str(filled_time_df['Time'].iloc[0]) 
-    fore_first_time = datetime.datetime.strptime(fore_first_time, "%Y-%m-%d %I:%M:%S")
-
+    fore_first_time = str(filled_forecast_df['Time'].iloc[0]) 
+    fore_first_time = convert_str_to_datetime(fore_first_time)
     # get the difference in time between the gap
     hours_difference = (fore_first_time - obs_last_time).total_seconds() / 60 / 60
     intervals = int(hours_difference * 4) # number of 15 minute intervals
@@ -54,43 +55,45 @@ def bridge_obs_to_fore(observed_df, filled_time_df, patch_to_forecasted=False):
     # create list of all time values in the bridge
     bridge_times = []
     t = obs_last_time + datetime.timedelta(minutes=15)
-    bridge_times.append(convert_datetime_to_str(t))
+    bridge_times.append(convert_datetime_to_formatted_str(t))
     for i in range(intervals-2):
         t = t + datetime.timedelta(minutes=15)
-        bridge_times.append(convert_datetime_to_str(t))
+        bridge_times.append(t)
 
     # get beginning and ending forecast levels
     start_level = float(observed_df['Level'].iloc[-1])
-    end_level = float(filled_time_df['Level'].iloc[0])
+    end_level = float(filled_forecast_df['Level'].iloc[0])
     # get list of levels using Euler's Rule
     level_range = end_level - start_level
     increment = level_range / intervals
     bridge_levels = []
     lvl = start_level + increment
     bridge_levels.append(lvl)
-    for i in range(intervals-2):
+    for k in range(intervals-2):
         lvl += increment
         bridge_levels.append(lvl)
+    
+    bridge_data = pd.DataFrame(dict(Level=bridge_levels, Time=bridge_times))
+    joint_bridge_forecast = pd.concat([bridge_data, filled_forecast_df])
 
-    # if patch_to_forecasted:
-    #     return pd.concat([pd.DataFrame(dict(Level=bridge_levels, Time=bridge_times)), filled_time_df])
-    # else:
-        return pd.DataFrame(dict(Level=bridge_levels, Time=bridge_times))
+    return joint_bridge_forecast
 
 
 def fill_missing_time(time):
     """ Adds filler points to the forecast plot to account for the data being
     in 6 hour intervals instead of 15 minute intrevals like the observed plot.
     Allows the time and plot size to be consistent amongst the two plots. 
+
+    @param time - list of datetimes
     """
     adjusted_time = []
     for sixhr_interval in time:
-        adjusted_time.append(convert_datetime_to_str(sixhr_interval))
+        adjusted_time.append(sixhr_interval)
         fill_interval = sixhr_interval + datetime.timedelta(minutes=15)
-        adjusted_time.append(convert_datetime_to_str(fill_interval))
+        adjusted_time.append(fill_interval)
         for i in range(23):
             fill_interval = fill_interval + datetime.timedelta(minutes=15)
-            adjusted_time.append(convert_datetime_to_str(fill_interval))
+            adjusted_time.append(fill_interval)
     return adjusted_time
 
 
@@ -118,27 +121,28 @@ def fill_missing_levels(levels):
 
 def get_flood_data(xml_root, observed_or_forecast):
     xml_elements = xml_root.findall(observed_or_forecast + '/datum')
-    level = []
-    forecast_time_list = []
-    # get xml data
+    levels = []
+    time_list = []
+    # get parse xml elements with flood data
     for datum in xml_elements:
-        datetime_UTC = datum.find('valid').text
+        date_UTC_str = datum.find('valid').text
         water_level = datum.find('primary').text # in feet
-        flow = datum.find('secondary').text # in kcfs
-        pedts = datum.find('pedts').text
-        level.append(water_level)
-        formatted_datetime = convert_xmlstr_to_datetime(datetime_UTC)
-        forecast_time_list.append(formatted_datetime)
+        # below values not currently being put to use
+        # flow = datum.find('secondary').text # in kcfs
+        # pedts = datum.find('pedts').text
+        levels.append(water_level)
+        dt = convert_str_to_datetime(date_UTC_str)
+        time_list.append(dt)
     # format xml data for dash
-    if observed_or_forecast == 'observed':
-        forecast_time_list.reverse()
-        level.reverse()
-    elif observed_or_forecast == 'forecast':
-        forecast_time_list = fill_missing_time(forecast_time_list)
-        level = fill_missing_levels(level)
+    if observed_or_forecast == 'observed': #observed data is flipped in xml
+        time_list.reverse()
+        levels.reverse()
+    elif observed_or_forecast == 'forecast': #forecasted data is incremented by 6hours not 15min
+        time_list = fill_missing_time(time_list)
+        levels = fill_missing_levels(levels)
     else:
         raise ValueError("~Boone~ the get_flood_data method expects the 'observed' or 'forecast'.")
-    data = list(zip(forecast_time_list, level))
+    data = list(zip(time_list, levels))
     return pd.DataFrame(data, columns=['Time', 'Level'])
 
 
@@ -173,87 +177,11 @@ def get_custom_graph():
     fig['layout']['legend'] = {'x': 0, 'y': 1, 'xanchor': 'left'}
     return fig
 
-def create_flood_graph():
-    observed_df = get_observed_data()
-    forecast_data = get_forecast_data()
-
-    return dcc.Graph(
-        figure=dict(
-            data=[
-                dict(
-                    x=observed_df['Time'],
-                    y=observed_df['Level'],
-                    name='Observed',
-                    marker=dict(
-                        color='rgb(55, 83, 109)'
-                    )
-                ),
-                dict(
-                    x=forecast_data['Time'],
-                    y=forecast_data['Level'],
-                    name='Forecasted',
-                    marker=dict(
-                        color='rgb(26, 118, 255)'
-                    )
-                )
-            ],
-            layout=dict(
-                title='James River Flood Level (Richmond-Westham)',
-                showlegend=True,
-                legend=dict(
-                    x=0,
-                    y=1.0
-                ),
-                margin=dict(l=40, r=0, t=40, b=30)
-            )
-        ),
-        style={'height': 700},
-        id='my-graph'
-    )  
-
-def create_flood_interval(frequency_secs):
-    return dcc.Interval(
-            id='interval-component',
-            interval= frequency_secs * 1000,
-            n_intervals= 0
-        )
-
-
 if __name__ == "__main__":
+    # get dataframes of flood levels
     xml_root = get_xml_root('https://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=rmdv2&output=xml')
     observed_data = get_flood_data(xml_root, 'observed')
     filled_forecast_data = get_flood_data(xml_root, 'forecast')
+    bridge_data = bridge_obs_to_fore(observed_data, filled_forecast_data)
 
-    result = bridge_obs_to_fore(observed_data, filled_forecast_data)
-
-
-
-
-
-
-
-# time_segments = six_hrs.split(" ")
-        # date, hour, post = (time_segments[0], int(time_segments[1].split(":")[0]), time_segments[2])
-        # minute = 0
-        # # create and append fill points
-        # for i in range(0,23): # 24, 15-minute intevals in six hours. Minus the last point as it is already accounted for.
-        #     # increment time
-        #     if hour == 12 and minute == 45:
-        #         hour = 1
-        #         minute = 0
-        #     elif minute == 45:
-        #         hour += 1
-        #         minute = 0
-        #     else:
-        #         minute += 15
-        #     # convert hour and minute to str format
-        #     if hour <= 9:
-        #         hour_str = "0" + str(hour)
-        #     else:
-        #         hour_str = str(hour)            
-        #     # format minute int for output
-        #     if minute == 0:
-        #         minute_str = '00'
-        #     else:
-        #         minute_str = str(minute)
-        #     # add fill point
+    print(observed_data, result, filled_forecast_data)
