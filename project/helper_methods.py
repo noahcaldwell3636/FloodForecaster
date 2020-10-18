@@ -56,7 +56,7 @@ def bridge_to_fore(observed_df, filled_forecast_df):
     bridge_times = []
     t = obs_last_time + datetime.timedelta(minutes=15)
     bridge_times.append(convert_datetime_to_formatted_str(t))
-    for i in range(intervals-2):
+    for i in range(intervals-2): # minues two b/c the first and last points are included on the observed df and the orginal df
         t = t + datetime.timedelta(minutes=15)
         bridge_times.append(t)
 
@@ -64,12 +64,12 @@ def bridge_to_fore(observed_df, filled_forecast_df):
     start_level = float(observed_df['Level'].iloc[-1])
     end_level = float(filled_forecast_df['Level'].iloc[0])
     # get list of levels using Euler's Rule
-    level_range = end_level - start_level
+    level_range = float(end_level) - float(start_level)
     increment = level_range / intervals
     bridge_levels = []
-    lvl = start_level + increment
+    lvl = float(start_level + increment)
     bridge_levels.append(lvl)
-    for k in range(intervals-2):
+    for k in range(intervals-2): # minues two b/c the first and last points are included on the observed df and the orginal df
         lvl += increment
         bridge_levels.append(lvl)
     
@@ -102,7 +102,7 @@ def fill_missing_levels(levels):
     adjusted_levels = []
     for i in range(len(levels)):
         current_level = float(levels[i])
-        adjusted_levels.append(str(current_level))
+        adjusted_levels.append(float(current_level))
         try:
             next_level = float(levels[i+1])
         except:
@@ -112,10 +112,10 @@ def fill_missing_levels(levels):
         rate_of_change = (1/points) * (next_level-current_level)
         # create each fill point
         fill_point = current_level + rate_of_change
-        adjusted_levels.append(str(fill_point))
+        adjusted_levels.append(float(fill_point))
         for j in range(points-1): # create next points except for the last point which is given in the level param
             fill_point = fill_point + rate_of_change
-            adjusted_levels.append(str(fill_point))
+            adjusted_levels.append(float(fill_point))
     return adjusted_levels
 
 
@@ -130,7 +130,7 @@ def get_flood_data(xml_root, observed_or_forecast):
         # below values not currently being put to use
         # flow = datum.find('secondary').text # in kcfs
         # pedts = datum.find('pedts').text
-        levels.append(water_level)
+        levels.append(float(water_level))
         dt = convert_str_to_datetime(date_UTC_str)
         time_list.append(dt)
     # format xml data for dash

@@ -2,8 +2,8 @@ OBJECTIVES:
 #####################################################################################
 
 
-
 FINISHED:
+6. give the flood graph a proper Y range
 5. create the graph as a plotly.graph_obj
 4. reconfigure for new repository
 3. add missing data points to forecasted data so its size is proprotional to the

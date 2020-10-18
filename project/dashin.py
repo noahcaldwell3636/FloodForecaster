@@ -61,9 +61,26 @@ def update_flood_graph(interval):
     forecast_plot = go.Scatter(x=forecast_data['Time'], y=forecast_data['Level'])
 
     print("update!")
+    for level in list(obs_data['Level']):
+        if type(level) == type("this is a string"):
+            print("obs")
+            print(level)
+    for level in list(forecast_data['Level']):
+        if type(level) == type("this is a string"):
+            print("fore")
+            print(level)
+
+    # get range of y axis
+    y_lowest = min( min(list(obs_data['Level'])), min(list(forecast_data['Level'])) ) - 2
+    y_highest = max( max(list(obs_data['Level'])), max(list(forecast_data['Level'])) ) + 5
 
     return {
-        'data': [obs_plot, forecast_plot]
+        'data': [obs_plot, forecast_plot],
+        'layout': go.Layout(
+            yaxis={
+                'range': ([y_lowest, y_highest]),
+            },
+        )
     }
 
 
