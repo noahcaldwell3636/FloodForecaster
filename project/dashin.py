@@ -2,6 +2,7 @@ import dash
 import dash_html_components as html
 import plotly
 from dash.dependencies import Input, Output
+import plotly.graph_objs as go
 # MY IMPORTS
 from helper_methods import *
 from layout import *
@@ -24,12 +25,12 @@ app = dash.Dash(__name__)
 app.layout = html.Div(
     html.Div([
         html.H4('James River Flood Forecast'),
-        html.Div(id='live-update-text'),
-        create_flood_graph(
-            observed_df=observed_data,
-            forecast_df=bridged_fore_data
-        ),
-        create_flood_interval(15)
+        html.Div(className='row', children=[html.Div(dcc.Graph(id='flood-graph', animate=False), className='')]),
+        dcc.Interval(
+            id='flood-update-interval',
+            interval= 30 * 1000,
+            n_intervals= 0
+        )
     ])
 )
 
@@ -47,21 +48,23 @@ app.layout = html.Div(
 #         html.Span(f'Water Level: {current_level}', style=style)
 #     ]
 
+@app.callback(
+    Output(component_id='flood-graph', component_property='figure'),
+    [Input('flood-update-interval', 'interval')])
+def update_flood_graph(interval):
+    obs_data = get_observed_data()
+    obs_plot = go.Scatter(x=obs_data['Time'], y=obs_data['Level'])
 
-# Multiple components can update everytime interval gets fired.
-# @app.callback(Output('live-update-graph', 'figure'),
-#               [Input('interval-component', 'n_intervals')])
-# def update_graph_observed(n):
-#     data = get_observed_data()
-#     fig = get_custom_graph()
-#     fig.append_trace({
-#         'x': data['time'],
-#         'y': data['level'],
-#         'name': 'Water Level',
-#         'mode': 'lines+markers',
-#         'type': 'scatter'
-#     }, 1, 1)
-#     return fig
+
+    forecast_data = get_forecast_data()
+    forecast_data = bridge_to_fore(observed_data, forecast_data)
+    forecast_plot = go.Scatter(x=forecast_data['Time'], y=forecast_data['Level'])
+
+    print("update!")
+
+    return {
+        'data': [obs_plot, forecast_plot]
+    }
 
 
 

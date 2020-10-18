@@ -1,5 +1,11 @@
 OBJECTIVES:
 #####################################################################################
+
+
+
+FINISHED:
+5. create the graph as a plotly.graph_obj
+4. reconfigure for new repository
 3. add missing data points to forecasted data so its size is proprotional to the
 time lapsed
     a- time (output list complete)
@@ -8,9 +14,6 @@ time lapsed
         d- create bridge data between observed and forecasted (completed)
         e- create a unified date string format (completed)
         f- step through whole pipline, refactoring and tending to objective 'd' (completed) 
-
-FINISHED:
-4. reconfigure for new repository
 
 2. add the forecasted scatterplot trace to graph
 1. return the forecasted dataset
