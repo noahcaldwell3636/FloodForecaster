@@ -3,6 +3,7 @@ import dash_html_components as html
 import plotly
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
+import plotly.io as pio
 # MY IMPORTS
 from helper_methods import *
 from layout import *
@@ -119,7 +120,29 @@ def update_flood_graph(interval):
         x=[x_lowest, x_highest],
         y=[28.62, 28.62],
         fill='tonexty', # fill area between trace0 and trace1
-        mode='lines', line_color='#9c0000')
+        mode='lines',
+        line_color='#9c0000',
+        )
+
+    current_level = obs_data['Level'].iloc[-1]
+    level_metric_str = "Level: " + str(current_level) + "ft"
+    pio.templates["draft"] = go.layout.Template(
+        layout_annotations=[
+            dict(
+                name="draft watermark",
+                text=level_metric_str,
+                textangle=0,
+                opacity=0.3,
+                font=dict(color="green", size=200),
+                xref="paper",
+                yref="paper",
+                x=0,
+                y=0,
+                showarrow=False,
+            )
+        ]
+    )
+
 
 
     return {
@@ -136,6 +159,7 @@ def update_flood_graph(interval):
             },
             plot_bgcolor = app_colors['black'],
             paper_bgcolor = app_colors['black'],
+            template="draft"
         )
     }
 

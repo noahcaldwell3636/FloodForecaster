@@ -1,8 +1,10 @@
 OBJECTIVES:
 #####################################################################################
-9. 
+10. make the observed plot an area chart
+
 
 FINISHED:
+9. add current level metric
 8. scale Y with zones, change hieght
 7. create flood zones for the graph
 6. give the flood graph a proper Y range
