@@ -18,6 +18,7 @@ app_colors = {
     'white': "#eeeeee",
     'blue': '#0278ae',
     'purple': '#9d65c9',
+    'red': "#db675e",
 }
 
 
@@ -70,7 +71,9 @@ def update_flood_graph(interval):
         x=obs_data['Time'], 
         y=obs_data['Level'],
         line = dict(color = (app_colors['blue']),
-                            width = 6,)
+                            width = 6),
+        fill='tozeroy',
+        fillcolor=app_colors['blue'],
     )
 
 
@@ -83,6 +86,7 @@ def update_flood_graph(interval):
             color = (app_colors['green']),
             width = 6,
         ),
+        fill='tozeroy',
         mode="lines",
         dx=5,
     )
@@ -132,8 +136,8 @@ def update_flood_graph(interval):
                 name="draft watermark",
                 text=level_metric_str,
                 textangle=0,
-                opacity=0.3,
-                font=dict(color="green", size=200),
+                opacity=0.9,
+                font=dict(color=app_colors['red'], size=200),
                 xref="paper",
                 yref="paper",
                 x=0,
@@ -151,11 +155,13 @@ def update_flood_graph(interval):
             height=int(get_screen_resolution()['height'] * .667),
             width=int(get_screen_resolution()['width'] * .8),
             xaxis={
-                'title': "Date"
+                'title': "Date",
+                'color': 'white',
             },
             yaxis={
                 'title': "Water Level ft.",
                 'range': ([0, y_highest]),
+                'color': 'white',
             },
             plot_bgcolor = app_colors['black'],
             paper_bgcolor = app_colors['black'],

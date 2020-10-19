@@ -1,9 +1,12 @@
+https://plotly.com/python/colorscales/ (instead of the line plots for the flood zones)
+
 OBJECTIVES:
 #####################################################################################
-10. make the observed plot an area chart
 
 
 FINISHED:
+11. make axis ticks and labels white
+10. make the observed plot an area chart
 9. add current level metric
 8. scale Y with zones, change hieght
 7. create flood zones for the graph
@@ -18,7 +21,6 @@ time lapsed
         d- create bridge data between observed and forecasted (completed)
         e- create a unified date string format (completed)
         f- step through whole pipline, refactoring and tending to objective 'd' (completed) 
-
 2. add the forecasted scatterplot trace to graph
 1. return the forecasted dataset
     - seperate out redundant lines of code into new methods from observed getter
