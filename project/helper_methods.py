@@ -2,6 +2,7 @@ from urllib.request import urlopen
 import xml.etree.ElementTree as ET
 import datetime
 import pandas as pd
+from win32api import GetSystemMetrics
 
 
 def convert_str_to_datetime(datetime_str):
@@ -145,8 +146,8 @@ def get_flood_data(xml_root, observed_or_forecast):
     data = list(zip(time_list, levels))
     return pd.DataFrame(data, columns=['Time', 'Level'])
 
-
-
+def get_screen_resolution():
+    return {"width": GetSystemMetrics(0), "height": GetSystemMetrics(1)}
 
 
 

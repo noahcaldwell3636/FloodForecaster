@@ -125,12 +125,14 @@ def update_flood_graph(interval):
     return {
         'data': [obs_plot, forecast_plot, zone1, zone2, zone3, zone4, zone5],
         'layout': go.Layout(
+            height=int(get_screen_resolution()['height'] * .667),
+            width=int(get_screen_resolution()['width'] * .8),
             xaxis={
                 'title': "Date"
             },
             yaxis={
                 'title': "Water Level ft.",
-                # 'range': ([y_lowest, y_highest]),
+                'range': ([0, y_highest]),
             },
             plot_bgcolor = app_colors['black'],
             paper_bgcolor = app_colors['black'],

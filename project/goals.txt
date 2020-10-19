@@ -1,8 +1,9 @@
 OBJECTIVES:
 #####################################################################################
-8. scale Y with zones
+9. 
 
 FINISHED:
+8. scale Y with zones, change hieght
 7. create flood zones for the graph
 6. give the flood graph a proper Y range
 5. create the graph as a plotly.graph_obj
