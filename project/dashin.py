@@ -38,7 +38,6 @@ bridged_fore_data = bridge_to_fore(observed_data, forecast_data)
 app = dash.Dash(__name__)
 app.layout = html.Div(
     html.Div([
-        html.H4('James River Flood Forecast'),
         html.Div(className='row', children=[html.Div(dcc.Graph(id='flood-graph', animate=False), className='')]),
         dcc.Interval(
             id='flood-update-interval',
@@ -68,6 +67,7 @@ app.layout = html.Div(
 def update_flood_graph(interval):
     obs_data = get_observed_data()
     obs_plot = go.Scatter(
+        name='Observed Level',
         x=obs_data['Time'], 
         y=obs_data['Level'],
         line = dict(color = (app_colors['blue']),
@@ -80,6 +80,7 @@ def update_flood_graph(interval):
     forecast_data = get_forecast_data()
     forecast_data = bridge_to_fore(observed_data, forecast_data)
     forecast_plot = go.Scatter(
+        name='Level Forecast',
         x=forecast_data['Time'],
         y=forecast_data['Level'],
         line = dict(
@@ -100,27 +101,32 @@ def update_flood_graph(interval):
     print(x_lowest, x_highest)
 
     zone1 = go.Scatter(
+        name='Action Stage',
         x=[x_lowest, x_highest], 
         y=[9, 9],
         fill=None,
         mode='lines',
         line_color='#696300')
     zone2 = go.Scatter(
+        name='Flood Stage',
         x=[x_lowest, x_highest],
         y=[12, 12],
         fill='tonexty', # fill area between trace0 and trace1
         mode='lines', line_color='#696300')
     zone3 = go.Scatter(
+        name='Moderate Flood Stage',
         x=[x_lowest, x_highest],
         y=[15, 15],
         fill='tonexty', # fill area between trace0 and trace1
         mode='lines', line_color='#694200')
     zone4 = go.Scatter(
+        name='Major Flood Stage',
         x=[x_lowest, x_highest],
         y=[22, 22],
         fill='tonexty', # fill area between trace0 and trace1
         mode='lines', line_color='#691000')
     zone5 = go.Scatter(
+        name='Record',
         x=[x_lowest, x_highest],
         y=[28.62, 28.62],
         fill='tonexty', # fill area between trace0 and trace1
@@ -165,7 +171,21 @@ def update_flood_graph(interval):
             },
             plot_bgcolor = app_colors['black'],
             paper_bgcolor = app_colors['black'],
-            template="draft"
+            template="draft",
+            legend=dict(
+                # x=0,
+                # y=1,
+                traceorder="reversed",
+                title_font_family="Times New Roman",
+                font=dict(
+                    family="Courier",
+                    size=12,
+                    color="white"
+                ),
+                # bgcolor="LightSteelBlue",
+                bordercolor="white",
+                borderwidth=2,
+            )
         )
     }
 

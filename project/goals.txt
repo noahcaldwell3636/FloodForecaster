@@ -3,8 +3,11 @@ https://plotly.com/python/colorscales/ (instead of the line plots for the flood 
 OBJECTIVES:
 #####################################################################################
 
+13. make the y-axis tick by 1ft increments
+14. make the static value for the 'record' plot attached to the value provided by the xml on the web
 
 FINISHED:
+12. name traces in in the key/legend
 11. make axis ticks and labels white
 10. make the observed plot an area chart
 9. add current level metric
