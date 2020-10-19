@@ -7,6 +7,18 @@ import plotly.graph_objs as go
 from helper_methods import *
 from layout import *
 
+################################################################################
+##########################_CONSTANTS_###########################################
+################################################################################
+app_colors = {
+    'black': '#232931',
+    'grey': '#393e46',
+    'green': '#41aea9',
+    'white': "#eeeeee",
+    'blue': '#0278ae',
+    'purple': '#9d65c9',
+}
+
 
 #################################################################################
 ################################_GET_DATA_#######################################
@@ -53,35 +65,78 @@ app.layout = html.Div(
     [Input('flood-update-interval', 'interval')])
 def update_flood_graph(interval):
     obs_data = get_observed_data()
-    obs_plot = go.Scatter(x=obs_data['Time'], y=obs_data['Level'])
+    obs_plot = go.Scatter(
+        x=obs_data['Time'], 
+        y=obs_data['Level'],
+        line = dict(color = (app_colors['blue']),
+                            width = 6,)
+    )
 
 
     forecast_data = get_forecast_data()
     forecast_data = bridge_to_fore(observed_data, forecast_data)
-    forecast_plot = go.Scatter(x=forecast_data['Time'], y=forecast_data['Level'])
-
-    print("update!")
-    for level in list(obs_data['Level']):
-        if type(level) == type("this is a string"):
-            print("obs")
-            print(level)
-    for level in list(forecast_data['Level']):
-        if type(level) == type("this is a string"):
-            print("fore")
-            print(level)
+    forecast_plot = go.Scatter(
+        x=forecast_data['Time'],
+        y=forecast_data['Level'],
+        line = dict(
+            color = (app_colors['green']),
+            width = 6,
+        ),
+        mode="lines",
+        dx=5,
+    )
 
     # get range of y axis
     y_lowest = min( min(list(obs_data['Level'])), min(list(forecast_data['Level'])) ) - 2
     y_highest = max( max(list(obs_data['Level'])), max(list(forecast_data['Level'])) ) + 5
 
+    x_lowest = obs_data['Time'].iloc[0]
+    x_highest = forecast_data['Time'].iloc[-1]
+    print(x_lowest, x_highest)
+
+    zone1 = go.Scatter(
+        x=[x_lowest, x_highest], 
+        y=[9, 9],
+        fill=None,
+        mode='lines',
+        line_color='#696300')
+    zone2 = go.Scatter(
+        x=[x_lowest, x_highest],
+        y=[12, 12],
+        fill='tonexty', # fill area between trace0 and trace1
+        mode='lines', line_color='#696300')
+    zone3 = go.Scatter(
+        x=[x_lowest, x_highest],
+        y=[15, 15],
+        fill='tonexty', # fill area between trace0 and trace1
+        mode='lines', line_color='#694200')
+    zone4 = go.Scatter(
+        x=[x_lowest, x_highest],
+        y=[22, 22],
+        fill='tonexty', # fill area between trace0 and trace1
+        mode='lines', line_color='#691000')
+    zone5 = go.Scatter(
+        x=[x_lowest, x_highest],
+        y=[28.62, 28.62],
+        fill='tonexty', # fill area between trace0 and trace1
+        mode='lines', line_color='#9c0000')
+
+
     return {
-        'data': [obs_plot, forecast_plot],
+        'data': [obs_plot, forecast_plot, zone1, zone2, zone3, zone4, zone5],
         'layout': go.Layout(
-            yaxis={
-                'range': ([y_lowest, y_highest]),
+            xaxis={
+                'title': "Date"
             },
+            yaxis={
+                'title': "Water Level ft.",
+                # 'range': ([y_lowest, y_highest]),
+            },
+            plot_bgcolor = app_colors['black'],
+            paper_bgcolor = app_colors['black'],
         )
     }
+
 
 
 
