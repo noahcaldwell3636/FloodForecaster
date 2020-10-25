@@ -3,8 +3,10 @@ import xml.etree.ElementTree as ET
 import datetime
 import pandas as pd
 from win32api import GetSystemMetrics
+from climacell_api.client import ClimacellApiClient
 
 
+#something
 def convert_str_to_datetime(datetime_str):
     """ 
     Converts datetime_str time from the xml doc to a datetime object
@@ -177,6 +179,75 @@ def get_custom_graph():
     }
     fig['layout']['legend'] = {'x': 0, 'y': 1, 'xanchor': 'left'}
     return fig
+
+
+
+
+
+def get_climacell_data():
+
+    key = "96Sx5iofKooIKqeBycfPBZfAmOTSnUa1"
+    client = ClimacellApiClient(key)
+    # 4700 welby turn = (37.558331, -77.639555)
+    rt = client.realtime(lat=37.558, lon=-77.639, fields=[
+        'temp',
+        'feels_like',
+        'humidity',
+        'wind_speed',
+        'wind_gust',
+        'baro_pressure',
+        'precipitation',
+        'precipitation_type',
+        # 'precipitation_probability',
+        # 'precipitation_accumulation',
+        'sunrise',
+        'sunset',
+        'visibility',
+        'cloud_cover',
+        'weather_code',
+    ])
+    rt_data = rt.data()
+    rt_measurements = rt_data.measurements
+
+    def convert_to_farhrenheit(temp_c):
+        temp_c /= 5
+        temp_c *= 9
+        temp_c += 32
+        return temp_c
+
+    return {
+        'obs_time': rt_data.observation_time,
+        'lat': rt_data.lat,
+        'long': rt_data.lon,
+        'temp_value': convert_to_farhrenheit(rt_measurements['temp'].value),
+        'temp_units': 'F\N{DEGREE SIGN}',
+        'feels_like_value': convert_to_farhrenheit(rt_measurements['feels_like'].value),
+        'feels_like_units': 'F\N{DEGREE SIGN}',
+        'humidity_value': rt_measurements['humidity'].value,
+        'humidity_units': rt_measurements['humidity'].units,
+        'wind_speed_value': rt_measurements['wind_speed'].value,
+        'wind_speed_units': rt_measurements['wind_speed'].units,
+        'wind_gust_value': rt_measurements['wind_gust'].value,
+        'wind_gust_units': rt_measurements['wind_gust'].units,
+        'baro_pressure_value': rt_measurements['baro_pressure'].value,
+        'baro_pressure_units': rt_measurements['baro_pressure'].units,
+        'precipitation_value': rt_measurements['precipitation'].value,
+        'precipitation_units': rt_measurements['precipitation'].units,
+        'precipitation_type_value': rt_measurements['precipitation_type'].value,
+        'sunrise_value': rt_measurements['sunrise'].value,
+        'sunset_value': rt_measurements['sunset'].value,
+        'visibility_value': rt_measurements['visibility'].value,
+        'visibility_units': rt_measurements['visibility'].units,
+        'cloud_cover_value': rt_measurements['cloud_cover'].value,
+        'cloud_cover_units': rt_measurements['cloud_cover'].units,
+        'weather_code_value': rt_measurements['weather_code'].value,
+    }
+
+
+
+
+
+
 
 if __name__ == "__main__":
     # get dataframes of flood levels

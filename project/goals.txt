@@ -2,11 +2,33 @@ https://plotly.com/python/colorscales/ (instead of the line plots for the flood 
 
 OBJECTIVES:
 #####################################################################################
-
 13. make the y-axis tick by 1ft increments
 14. make the static value for the 'record' plot attached to the value provided by the xml on the web
+16. display current turbidity on flood graph
+
+18. make all widgets and element sizes a percentage, to help aid with different screen sizes
+
+
 
 FINISHED:
+17. display metrics from ClimaCell
+    a-'temp',
+    b-'feels_like',
+    c-'humidity',
+    d-'wind_speed',
+    e-'wind_gust',
+    f-'baro_pressure',
+    g-'precipitation',
+    h-'precipitation_type',
+    i-'sunrise',
+    j-'sunset',
+    k-'visibility',
+    l-'cloud_cover',
+    m-'weather_code',
+    n-'precipitation_probability',
+
+15. bring in live temperature gauge
+
 12. name traces in in the key/legend
 11. make axis ticks and labels white
 10. make the observed plot an area chart
