@@ -6,7 +6,6 @@ from win32api import GetSystemMetrics
 from climacell_api.client import ClimacellApiClient
 
 
-#something
 def convert_str_to_datetime(datetime_str):
     """ 
     Converts datetime_str time from the xml doc to a datetime object
@@ -100,7 +99,6 @@ def fill_missing_time(time):
     return adjusted_time
 
 
-
 def fill_missing_levels(levels):
     adjusted_levels = []
     for i in range(len(levels)):
@@ -148,10 +146,9 @@ def get_flood_data(xml_root, observed_or_forecast):
     data = list(zip(time_list, levels))
     return pd.DataFrame(data, columns=['Time', 'Level'])
 
+
 def get_screen_resolution():
     return {"width": GetSystemMetrics(0), "height": GetSystemMetrics(1)}
-
-
 
 
 def get_observed_data():
@@ -163,12 +160,6 @@ def get_observed_data():
 def get_forecast_data():
     xml_root = get_xml_root(url='https://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=rmdv2&output=xml')
     return get_flood_data(xml_root, "forecast")
-
-
-
-
-
-
 
 
 def get_custom_graph():
@@ -184,8 +175,10 @@ def get_custom_graph():
 
 
 
-def get_climacell_data():
 
+
+
+def get_climacell_data():
     key = "96Sx5iofKooIKqeBycfPBZfAmOTSnUa1"
     client = ClimacellApiClient(key)
     # 4700 welby turn = (37.558331, -77.639555)
@@ -244,16 +237,11 @@ def get_climacell_data():
     }
 
 
-
-
-
-
-
 if __name__ == "__main__":
     # get dataframes of flood levels
     xml_root = get_xml_root('https://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=rmdv2&output=xml')
     observed_data = get_flood_data(xml_root, 'observed')
     filled_forecast_data = get_flood_data(xml_root, 'forecast')
-    bridge_data = bridge_obs_to_fore(observed_data, filled_forecast_data)
-
+    bridge_data = bridge_to_fore(observed_data, filled_forecast_data)  
+    get_climacell_data()
     print(observed_data, result, filled_forecast_data)

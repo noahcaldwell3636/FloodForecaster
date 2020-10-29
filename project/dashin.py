@@ -2,6 +2,7 @@ import dash
 import dash_html_components as html
 import dash_daq as daq
 import plotly
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import plotly.io as pio
@@ -20,7 +21,7 @@ app_colors = {
     'white': "#eeeeee",
     'blue': '#16697a',
     'purple': '#9d65c9',
-    'red': "#db675e",
+    'red': "#ff5747",
 }
 
 theme =  {
@@ -30,6 +31,7 @@ theme =  {
     'secondary': '#6E6E6E',
 }
 
+external_stylesheets = [dbc.themes.BOOTSTRAP]
 
 #################################################################################
 ################################_GET_DATA_#######################################
@@ -44,82 +46,284 @@ bridged_fore_data = bridge_to_fore(observed_data, forecast_data)
 ##################################################################################
 
 ########### CREATE APP ######################
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 ########### CREATE APP ######################
 
 
 ########### LAYOUT ######################
 app.layout = html.Div([
 
-    html.Div([
-
-        ########### LONGITUDE AND LATIUDE ########################
-        html.Div(
-            id='latitude',
-            style={
-                'padding-left': '1%',
-                'padding-top': '1%',
-                'color': app_colors['white'],
-                'display': 'inline-block',
-                'font-size': '200%',
-                '-webkit-transform':'scale(2,1)',
-                'margin-left': '20%',
-            },
-        ),
-        html.Div(
-            id='longitude',
-            style={
-                'padding-left': '1%',
-                'padding-top': '1%',
-                'color': app_colors['white'],
-                'display': 'inline-block',
-                'font-size': '200%',
-                '-webkit-transform':'scale(2,1)',
-                'margin-left': '6.5%',
-            }
-        ),
-        ############ LONGITUDE AND LATIUDE ########################
-
-
-
-        html.Div(className='row', children=[html.Div(dcc.Graph(id='flood-graph', animate=False), className='')]),
-        dcc.Interval(
+    dcc.Interval(
             id='flood-update-interval',
             interval= 30 * 1000,
-            n_intervals= 0
+            n_intervals= 0,
         ),
-        
+
+    dbc.Row([
+        #################_FLOOD_GRAPH_###########################
+        dbc.Col(html.Div(className='', children=[html.Div(dcc.Graph(id='flood-graph', animate=False), className='')],
+            style={
+                'display': 'inline-block',
+            }
+        ),
+        width=9,
+        ),
+        #################_FLOOD_GRAPH_###########################
+
+        ##################_METRICS_ON_RIGHT_#################################
+        dbc.Col([
+
+            ####################_COORDINATES_######################################
+            dbc.Row([
+
+                ##########LATITUDE##################
+                html.Div(
+                    id='latitude',
+                    style={
+                        'color': 'rgba(0,0,0,.3)',
+                        'display': 'inline-block',
+                        'font-size': '200%',
+                        'padding-left': '25%',
+                        'background-color': app_colors['black'],
+                    },
+                ),
+                ##########LATITUDE##################
+
+                ##########LATITUDE##################
+                html.Div(
+                    id='longitude',
+                    style={
+                        'color': 'rgba(0,0,0,.3)',
+                        'display': 'inline-block',
+                        'font-size': '200%',
+                        'background-color': app_colors['black'],
+                    },
+                ),
+                ##########LATITUDE##################
+
+            ]),
+            ####################_COORDINATES_######################################
+
+            ####################_Temperature_######################################
+            dbc.Row(html.Div(
+                id='temp',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '8em',
+                    'font-weight': 900,
+                    'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+                    'background-color': app_colors['black'],
+                    'padding-left': '25%',
+                },
+            ),),
+            ####################_Temperature_######################################
+
+            ####################_Feels like temperature_######################################
+            dbc.Row(html.Div(
+                id='feels-like',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+                    'background-color': app_colors['black'],
+                    'top': 0,
+                    'left': '50%',
+                    'text-align': 'center',
+                },
+            ),),
+            ####################_Feels like temperature_######################################
+
+            ####################_weather_description_######################################
+            dbc.Row(html.Div(
+                id='weather-code',
+                style={
+                    'display': 'table-row',
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+                    'background-color': app_colors['black'],
+                    'top': 0,
+                    'left': '50%',
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                    'z-index': 1,
+                },
+            ),),
+            ####################_weather_description_######################################
+        ],
+        width=3,
+        ),
     ],
-    style={
-        'background-color': f"{app_colors['black']}",
-    },
     ),
 
-
-    #############_METRICS_#######################################
-
-    #temperature
+    ####################################################################
+    ##################_METRICS_ON_RIGHT#################################
+    ####################################################################
+    
     html.Div(
-        id='temp'
+        id='cloud-cover',
         style={
-            'display': 'inline-block',
-            'color': app_colors['pink'],
-        }
+            'color': app_colors['red'],
+            'font-size': '2em',
+            'font-weight': 900,
+            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+            'background-color': app_colors['black'],
+            'top': 0,
+            'left': '50%',
+            'text-align': 'center',
+            'margin': '0% 0% 0% 0%',
+            'z-index': 1,
+        },
     ),
-    html.Div(id='barometer'),
-    html.Div(id='cloud-cover'),
-    html.Div(id='feels-like'),
-    html.Div(id='humidity'),
-    html.Div(id='obs_time'),
-    html.Div(id='precipitation_type'),
-    html.Div(id='sunrise'),
-    html.Div(id='sunset'),
-    html.Div(id='visability'),
-    html.Div(id='weather-code'),
-    html.Div(id='wind-gust'),
-    html.Div(id='wind-speed'),
 
-])
+    html.Div(
+        id='barometer',
+        style={
+            'display': 'table-row',
+            'color': app_colors['red'],
+            'font-size': '2em',
+            'font-weight': 900,
+            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+            'background-color': app_colors['black'],
+            'top': 0,
+            'text-align': 'center',
+            'margin': '0% 0% 0% 0%',
+            'z-index': 1,
+        },
+    ),
+
+    html.Div(
+        id='humidity',
+        style={
+            'display': 'table-row',
+            'color': app_colors['red'],
+            'font-size': '2em',
+            'font-weight': 900,
+            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+            'background-color': app_colors['black'],
+            'top': 0,
+            'text-align': 'center',
+            'margin': '0% 0% 0% 0%',
+            'z-index': 1,
+        },
+    ),
+    html.Div(
+        id='obs_time',
+        style={
+            'display': 'table-row',
+            'color': app_colors['red'],
+            'font-size': '2em',
+            'font-weight': 900,
+            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+            'background-color': app_colors['black'],
+            'top': 0,
+            'left': '50%',
+            'text-align': 'center',
+            'margin': '0% 0% 0% 0%',
+            'z-index': 1,
+        },
+    ),
+    html.Div(
+        id='precipitation_type',
+        style={
+            'display': 'table-row',
+            'color': app_colors['red'],
+            'font-size': '2em',
+            'font-weight': 900,
+            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+            'background-color': app_colors['black'],
+            'top': 0,
+            'left': '50%',
+            'text-align': 'center',
+            'margin': '0% 0% 0% 0%',
+            'z-index': 1,
+        },
+    ),
+    html.Div(
+        id='sunrise',
+        style={
+            'display': 'table-row',
+            'color': app_colors['red'],
+            'font-size': '2em',
+            'font-weight': 900,
+            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+            'background-color': app_colors['black'],
+            'top': 0,
+            'left': '50%',
+            'text-align': 'center',
+            'margin': '0% 0% 0% 0%',
+            'z-index': 1,
+        },
+    ),
+    html.Div(
+        id='sunset',
+        style={
+            'display': 'table-row',
+            'color': app_colors['red'],
+            'font-size': '2em',
+            'font-weight': 900,
+            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+            'background-color': app_colors['black'],
+            'top': 0,
+            'left': '50%',
+            'text-align': 'center',
+            'margin': '0% 0% 0% 0%',
+            'z-index': 1,
+        },
+    ),
+    html.Div(
+        id='visability',
+        style={
+            'display': 'table-row',
+            'color': app_colors['red'],
+            'font-size': '2em',
+            'font-weight': 900,
+            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+            'background-color': app_colors['black'],
+            'top': 0,
+            'left': '50%',
+            'text-align': 'center',
+            'margin': '0% 0% 0% 0%',
+            'z-index': 1,
+        },
+    ),
+    html.Div(
+        id='wind-gust',
+        style={
+            'display': 'table-row',
+            'color': app_colors['red'],
+            'font-size': '2em',
+            'font-weight': 900,
+            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+            'background-color': app_colors['black'],
+            'top': 0,
+            'left': '50%',
+            'text-align': 'center',
+            'margin': '0% 0% 0% 0%',
+            'z-index': 1,
+        },
+    ),
+    html.Div(
+        id='wind-speed',
+        style={
+            'display': 'table-row',
+            'color': app_colors['red'],
+            'font-size': '2em',
+            'font-weight': 900,
+            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
+            'background-color': app_colors['black'],
+            'top': 0,
+            'left': '50%',
+            'text-align': 'center',
+            'margin': '0% 0% 0% 0%',
+            'z-index': 1,
+        },
+    ),
+    ]
+)
+
 
 ##################################################################################
 ##################################_CALLBACKS_#####################################
@@ -207,7 +411,7 @@ def update_flood_graph(interval):
                 text=level_metric_str,
                 textangle=0,
                 opacity=0.9,
-                font=dict(color=app_colors['red'], size=get_screen_resolution()['width']*.1),
+                font=dict(color=app_colors['red'], size=get_screen_resolution()['width']*.07),
                 xref="paper",
                 yref="paper",
                 x=0,
@@ -222,7 +426,7 @@ def update_flood_graph(interval):
     return {
         'data': [obs_plot, forecast_plot, zone1, zone2, zone3, zone4, zone5],
         'layout': go.Layout(
-            height=int(get_screen_resolution()['height'] * .667),
+            height=int(get_screen_resolution()['height'] * .8),
             width=int(get_screen_resolution()['width'] * .8),
             xaxis={
                 'title': "Date",
@@ -257,7 +461,7 @@ def update_flood_graph(interval):
 @app.callback(
     [
     Output(component_id='temp', component_property='children'),   
-    Output(component_id='barometer', component_property='children'),   
+    Output(component_id='barometer', component_property='children'), 
     Output(component_id='cloud-cover', component_property='children'), 
     Output(component_id='feels-like', component_property='children'),  
     Output(component_id='humidity', component_property='children'), 
@@ -278,10 +482,10 @@ def update_output_div(interval):
     data = get_climacell_data()
 
     return (
-        str(data['temp_value']) + str(data['temp_units']),
-        "Barometer: " + str(data['baro_pressure_value']) + str(data['baro_pressure_units']),
+        str(round(data['temp_value'], 1)) + " " + str(data['temp_units']),
+        str(data['baro_pressure_value']) + " " + data['baro_pressure_units'],
         "Cloud Cover: " + str(data['cloud_cover_value']) + str(data['cloud_cover_units']),
-        "Feels Like: " + str(data['feels_like_value']) + str(data['feels_like_units']),
+        "Feels Like: " + str(round(data['feels_like_value'], 1)) + str(data['feels_like_units']),
         "Humidity: " + str(data['humidity_value']) + str(data['humidity_units']),
         str(data['lat']) + "\N{DEGREE SIGN},",
         str(data['long']) + "\N{DEGREE SIGN}",

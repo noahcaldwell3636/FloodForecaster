@@ -4,9 +4,10 @@ OBJECTIVES:
 #####################################################################################
 13. make the y-axis tick by 1ft increments
 14. make the static value for the 'record' plot attached to the value provided by the xml on the web
-16. display current turbidity on flood graph
+16. (no data?) display current turbidity on flood graph
 
 18. make all widgets and element sizes a percentage, to help aid with different screen sizes
+19. update the style of all widgets somewhere other than layout to reduce complexity.
 
 
 

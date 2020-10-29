@@ -3,14 +3,16 @@ import dash_html_components as html
 
 
 
-
-def create_flood_graph():
-    return  html.Div(className='row', children=[html.Div(dcc.Graph(id='flood-graph', animate=False), className='')])
-
-
-def create_flood_interval(frequency_secs):
-    return dcc.Interval(
-            id='flood-update-interval',
-            interval= frequency_secs * 1000,
-            n_intervals= 0
-        )
+def get_latitude_div():
+    return  html.Div(
+                id='latitude',
+                style={
+                    'padding-left': '1%',
+                    'padding-top': '1%',
+                    'color': 'rgba(0,0,0,.3)',
+                    'display': 'inline-block',
+                    'font-size': '200%',
+                    '-webkit-transform':'scale(2,1)',
+                    'margin-left': '20%',
+                },
+            ),
