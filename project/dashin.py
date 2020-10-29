@@ -36,6 +36,9 @@ external_stylesheets = [dbc.themes.BOOTSTRAP]
 #################################################################################
 ################################_GET_DATA_#######################################
 #################################################################################
+observed_data = get_observed_data()
+forecast_data = get_forecast_data()
+forecast_data = bridge_to_fore(observed_data, forecast_data)
 most_recent_clima_data = None
 
 
@@ -57,8 +60,10 @@ app.layout = html.Div([
             n_intervals= 0,
         ),
 
-    dbc.Row([
+    dbc.Row([ # FIRST ROW WITH GRAPH AND METRICS
+
         #################_FLOOD_GRAPH_###########################
+
         dbc.Col(html.Div(className='', children=[html.Div(dcc.Graph(id='flood-graph', animate=False), className='')],
             style={
                 'display': 'inline-block',
@@ -68,8 +73,11 @@ app.layout = html.Div([
         ),
         #################_FLOOD_GRAPH_###########################
 
-        ##################_METRICS_ON_RIGHT_#################################
-        dbc.Col([
+            
+        ####################################################################
+        ##################_METRICS_ON_RIGHT#################################
+        ####################################################################
+        dbc.Col([ # metrics on the right column
 
             ####################_COORDINATES_######################################
             dbc.Row([
@@ -81,7 +89,7 @@ app.layout = html.Div([
                         'color': 'rgba(0,0,0,.3)',
                         'display': 'inline-block',
                         'font-size': '200%',
-                        'padding-left': '25%',
+                        # 'padding-left': '25%',
                         'background-color': app_colors['black'],
                     },
                 ),
@@ -98,7 +106,6 @@ app.layout = html.Div([
                     },
                 ),
                 ##########LATITUDE##################
-
             ]),
             ####################_COORDINATES_######################################
 
@@ -111,7 +118,7 @@ app.layout = html.Div([
                     'font-weight': 900,
                     'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
                     'background-color': app_colors['black'],
-                    'padding-left': '25%',
+                    'text-align': 'center',
                 },
             ),),
             ####################_Temperature_######################################
@@ -125,200 +132,189 @@ app.layout = html.Div([
                     'font-weight': 900,
                     'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
                     'background-color': app_colors['black'],
-                    'top': 0,
-                    'left': '50%',
                     'text-align': 'center',
                 },
             ),),
-            ####################_Feels like temperature_######################################
+            ####################_Feels like temperature_###################################
 
             ####################_weather_description_######################################
             dbc.Row(html.Div(
                 id='weather-code',
                 style={
-                    'display': 'table-row',
                     'color': app_colors['red'],
                     'font-size': '2em',
                     'font-weight': 900,
-                    'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
                     'background-color': app_colors['black'],
-                    'top': 0,
-                    'left': '50%',
                     'text-align': 'center',
                     'margin': '0% 0% 0% 0%',
-                    'z-index': 1,
                 },
             ),),
             ####################_weather_description_######################################
+
+            ####################_cloud_cover_##############################################
+            dbc.Row(html.Div(
+                id='cloud-cover',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'background-color': app_colors['black'],
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                },
+            ),),
+            ####################_cloud_cover_#########################################
+
+            ####################_barometer_##########################################
+            dbc.Row(html.Div(
+                id='barometer',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'background-color': app_colors['black'],
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                },
+            ),),
+            ####################_barometer_##########################################
+
+            ####################_humidity_###########################################
+            dbc.Row(html.Div(
+                id='humidity',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'background-color': app_colors['black'],
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                },
+            ),),
+            ####################_humidity_############################################
+
+            ####################_last_update_#########################################
+            dbc.Row(html.Div(
+                id='obs_time',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'background-color': app_colors['black'],
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                },
+            ),),
+            ####################_last_update_#########################################
+
+
+            ####################_percip_type_#########################################
+            dbc.Row(html.Div(
+                id='precipitation_type',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'background-color': app_colors['black'],
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                },
+            ),
+
+            ),
+            ####################_percip_type_#########################################
+
+            ####################_sunrise_#############################################
+            dbc.Row(html.Div(
+                id='sunrise',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'background-color': app_colors['black'],
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                },
+            ),),
+            ####################_sunrise_#############################################
+
+            ####################_sunset_##############################################
+            dbc.Row(html.Div(
+                id='sunset',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'background-color': app_colors['black'],
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                },
+            ),),
+            ####################_sunset_##############################################
+
+            ####################_visability_###########################################
+            dbc.Row(html.Div(
+                id='visability',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'background-color': app_colors['black'],
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                },
+            ),),
+            ####################_visability_######################################
+
+            ####################_wind_gust_######################################
+            dbc.Row(html.Div(
+                id='wind-gust',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'background-color': app_colors['black'],
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                },
+            ),),
+            ####################_wind_gust_######################################
+
+            ####################_wind_speed_######################################
+            dbc.Row(html.Div(
+                id='wind-speed',
+                style={
+                    'color': app_colors['red'],
+                    'font-size': '2em',
+                    'font-weight': 900,
+                    'background-color': app_colors['black'],
+                    'text-align': 'center',
+                    'margin': '0% 0% 0% 0%',
+                },
+            ),),
+            ####################_wind_speed_######################################
         ],
-        width=3,
+        width={'size':3, 'offset':0},
+        style={
+            'color': app_colors['blue'],
+        },
         ),
     ],
     ),
 
-    ####################################################################
-    ##################_METRICS_ON_RIGHT#################################
-    ####################################################################
     
-    html.Div(
-        id='cloud-cover',
-        style={
-            'color': app_colors['red'],
-            'font-size': '2em',
-            'font-weight': 900,
-            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-            'background-color': app_colors['black'],
-            'top': 0,
-            'left': '50%',
-            'text-align': 'center',
-            'margin': '0% 0% 0% 0%',
-            'z-index': 1,
-        },
-    ),
+    
 
-    html.Div(
-        id='barometer',
-        style={
-            'display': 'table-row',
-            'color': app_colors['red'],
-            'font-size': '2em',
-            'font-weight': 900,
-            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-            'background-color': app_colors['black'],
-            'top': 0,
-            'text-align': 'center',
-            'margin': '0% 0% 0% 0%',
-            'z-index': 1,
-        },
-    ),
+    
 
-    html.Div(
-        id='humidity',
-        style={
-            'display': 'table-row',
-            'color': app_colors['red'],
-            'font-size': '2em',
-            'font-weight': 900,
-            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-            'background-color': app_colors['black'],
-            'top': 0,
-            'text-align': 'center',
-            'margin': '0% 0% 0% 0%',
-            'z-index': 1,
-        },
-    ),
-    html.Div(
-        id='obs_time',
-        style={
-            'display': 'table-row',
-            'color': app_colors['red'],
-            'font-size': '2em',
-            'font-weight': 900,
-            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-            'background-color': app_colors['black'],
-            'top': 0,
-            'left': '50%',
-            'text-align': 'center',
-            'margin': '0% 0% 0% 0%',
-            'z-index': 1,
-        },
-    ),
-    html.Div(
-        id='precipitation_type',
-        style={
-            'display': 'table-row',
-            'color': app_colors['red'],
-            'font-size': '2em',
-            'font-weight': 900,
-            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-            'background-color': app_colors['black'],
-            'top': 0,
-            'left': '50%',
-            'text-align': 'center',
-            'margin': '0% 0% 0% 0%',
-            'z-index': 1,
-        },
-    ),
-    html.Div(
-        id='sunrise',
-        style={
-            'display': 'table-row',
-            'color': app_colors['red'],
-            'font-size': '2em',
-            'font-weight': 900,
-            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-            'background-color': app_colors['black'],
-            'top': 0,
-            'left': '50%',
-            'text-align': 'center',
-            'margin': '0% 0% 0% 0%',
-            'z-index': 1,
-        },
-    ),
-    html.Div(
-        id='sunset',
-        style={
-            'display': 'table-row',
-            'color': app_colors['red'],
-            'font-size': '2em',
-            'font-weight': 900,
-            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-            'background-color': app_colors['black'],
-            'top': 0,
-            'left': '50%',
-            'text-align': 'center',
-            'margin': '0% 0% 0% 0%',
-            'z-index': 1,
-        },
-    ),
-    html.Div(
-        id='visability',
-        style={
-            'display': 'table-row',
-            'color': app_colors['red'],
-            'font-size': '2em',
-            'font-weight': 900,
-            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-            'background-color': app_colors['black'],
-            'top': 0,
-            'left': '50%',
-            'text-align': 'center',
-            'margin': '0% 0% 0% 0%',
-            'z-index': 1,
-        },
-    ),
-    html.Div(
-        id='wind-gust',
-        style={
-            'display': 'table-row',
-            'color': app_colors['red'],
-            'font-size': '2em',
-            'font-weight': 900,
-            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-            'background-color': app_colors['black'],
-            'top': 0,
-            'left': '50%',
-            'text-align': 'center',
-            'margin': '0% 0% 0% 0%',
-            'z-index': 1,
-        },
-    ),
-    html.Div(
-        id='wind-speed',
-        style={
-            'display': 'table-row',
-            'color': app_colors['red'],
-            'font-size': '2em',
-            'font-weight': 900,
-            'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-            'background-color': app_colors['black'],
-            'top': 0,
-            'left': '50%',
-            'text-align': 'center',
-            'margin': '0% 0% 0% 0%',
-            'z-index': 1,
-        },
-    ),
+    
+    
+    
+    
+    
+    
+    
+    
     ]
 )
 
@@ -425,7 +421,7 @@ def update_flood_graph(interval):
         'data': [obs_plot, forecast_plot, zone1, zone2, zone3, zone4, zone5],
         'layout': go.Layout(
             height=int(get_screen_resolution()['height'] * .8),
-            width=int(get_screen_resolution()['width'] * .8),
+            width=int(get_screen_resolution()['width'] * .75),
             xaxis={
                 'title': "Date",
                 'color': 'white',
@@ -440,8 +436,6 @@ def update_flood_graph(interval):
             paper_bgcolor = app_colors['black'],
             template="draft",
             legend=dict(
-                # x=0,
-                # y=0,
                 bgcolor='rgba(0,0,0,0)',
                 traceorder="reversed",
                 title_font_family="Times New Roman",
@@ -450,7 +444,11 @@ def update_flood_graph(interval):
                     size=12,
                     color="white",
                 ),
-
+                orientation='h',
+                yanchor='bottom',
+                xanchor='right',
+                y=1.02,
+                x=1,
             )
         )
     }
