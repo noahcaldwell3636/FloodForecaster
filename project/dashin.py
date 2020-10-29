@@ -36,9 +36,7 @@ external_stylesheets = [dbc.themes.BOOTSTRAP]
 #################################################################################
 ################################_GET_DATA_#######################################
 #################################################################################
-observed_data = get_observed_data()
-forecast_data = get_forecast_data()
-bridged_fore_data = bridge_to_fore(observed_data, forecast_data)
+most_recent_clima_data = None
 
 
 ##################################################################################
@@ -479,7 +477,11 @@ def update_flood_graph(interval):
     [Input(component_id='flood-update-interval', component_property='interval')]
 )
 def update_output_div(interval):
-    data = get_climacell_data()
+    try:
+        data = get_climacell_data()
+        most_recent_clima_data = data
+    except:
+        data = most_recent_clima_data
 
     return (
         str(round(data['temp_value'], 1)) + " " + str(data['temp_units']),
