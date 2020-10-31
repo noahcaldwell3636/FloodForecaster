@@ -39,7 +39,7 @@ external_stylesheets = [dbc.themes.BOOTSTRAP]
 observed_data = get_observed_data()
 forecast_data = get_forecast_data()
 forecast_data = bridge_to_fore(observed_data, forecast_data)
-most_recent_clima_data = None
+most_recent_clima_data = get_forecast_data()
 
 
 ##################################################################################
@@ -239,34 +239,6 @@ children=[
             ),
             ####################_percip_type_#########################################
 
-            ####################_sunrise_#############################################
-            dbc.Row(html.Div(
-                id='sunrise',
-                style={
-                    'color': app_colors['red'],
-                    'font-size': '2em',
-                    'font-weight': 900,
-                    'background-color': app_colors['black'],
-                    'text-align': 'center',
-                    'margin': '0% 0% 0% 0%',
-                },
-            ),),
-            ####################_sunrise_#############################################
-
-            ####################_sunset_##############################################
-            dbc.Row(html.Div(
-                id='sunset',
-                style={
-                    'color': app_colors['red'],
-                    'font-size': '2em',
-                    'font-weight': 900,
-                    'background-color': app_colors['black'],
-                    'text-align': 'center',
-                    'margin': '0% 0% 0% 0%',
-                },
-            ),),
-            ####################_sunset_##############################################
-
             ####################_visability_###########################################
             dbc.Row(html.Div(
                 id='visability',
@@ -349,10 +321,44 @@ children=[
                     },
                 ),
             ],
-            ),      
+            ),
 
+            ####################_sunrise_#############################################
+            dbc.Row([
+                dbc.Col(html.Div(
+                    id='sunrise',
+                    style={
+                        'color': app_colors['red'],
+                        'font-size': '1em',
+                        'font-weight': 900,
+                        'background-color': app_colors['black'],
+                        'text-align': 'center',
+                        'margin': '0% 0% 0% 0%',
+                    },
+                ),width=3),
+                ####################_sunrise_#############################################
 
+                dbc.Col(html.Div(
+                    id='sun-gauge',
+                ),width=6),
 
+                ####################_sunset_##############################################
+                dbc.Col(html.Div(
+                    id='sunset',
+                    style={
+                        'color': app_colors['red'],
+                        'font-size': '1em',
+                        'font-weight': 900,
+                        'background-color': app_colors['black'],
+                        'text-align': 'center',
+                        'margin': '0% 0% 0% 0%',
+                    },
+                ),width=3),
+            ####################_sunset_##############################################
+            ]),
+
+             
+      
 
         ],
         width={'size':3, 'offset':0},
@@ -519,6 +525,7 @@ def update_flood_graph(interval):
     Output(component_id='weather-code', component_property='children'), 
     Output(component_id='wind-gust', component_property='children'),   
     Output(component_id='wind-speed', component_property='children'),  
+    Output(component_id='sun-gauge', component_property='children'),  
     ],
     [Input(component_id='flood-update-interval', component_property='interval')]
 )
@@ -540,13 +547,21 @@ def update_output_div(interval):
         str(data['long']) + "\N{DEGREE SIGN}" + ")",
         "updated: " + str(data['obs_time']),
         "Precipitation: " + str(data['precipitation_type_value']),
-        "Sunset: " + str(data['sunset_value']),
-        "Sunrise: " + str(data['sunrise_value']),
+        [html.Div("Sunset:"), html.Div(str(data['sunset_value']))],
+        [html.Div("Sunrise:"), html.Div(str(data['sunrise_value']))],
         "Visibility: " + str(data['visibility_value']) + str(data['visibility_units']),
         "Weather: " + str(data['weather_code_value']),
         "Top Wind Gust: " + str(data['wind_gust_value']) + str(data['wind_gust_value']),
         "Wind Speed: " + str(data['wind_speed_value']) + str(data['wind_speed_value']),
+        daq.GraduatedBar(
+            color={"ranges":{"red":[0,1],"yellow":[2,11],"red":[11,12]}},
+            showCurrentValue=True,
+            value=get_mins_from_midnight(),
+            max=24*60, # minutes in a 12 hour period
+        ) 
     )
+
+
 
 
 @app.callback(

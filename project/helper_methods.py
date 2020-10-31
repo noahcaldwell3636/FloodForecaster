@@ -1,3 +1,4 @@
+from datetime import timedelta
 from urllib.request import urlopen
 import xml.etree.ElementTree as ET
 import datetime
@@ -163,6 +164,10 @@ def get_forecast_data():
     xml_root = get_xml_root(url='https://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=rmdv2&output=xml')
     return get_flood_data(xml_root, "forecast")
 
+def get_mins_from_midnight():
+    now = datetime.datetime.now()
+    return (now.hour * 60) + now.minute
+
 
 def get_custom_graph():
     # Create the graph with subplots
@@ -257,3 +262,5 @@ if __name__ == "__main__":
     observed_data = get_flood_data(xml_root, 'observed')
     filled_forecast_data = get_flood_data(xml_root, 'forecast')
     bridge_data = bridge_to_fore(observed_data, filled_forecast_data)  
+
+    clima_data = get_climacell_data()
