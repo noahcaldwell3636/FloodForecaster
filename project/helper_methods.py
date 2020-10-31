@@ -28,8 +28,11 @@ def convert_str_to_datetime(datetime_str):
     return dt
 
 
-def convert_datetime_to_formatted_str(dt):
+def convert_datetime_to_formatted_str(dt, date=True):
+    if date:
         return dt.strftime('%Y-%m-%d %I:%M:%S %p')
+    else:
+        return dt.strftime('%I:%M %p')
 
 def get_xml_root(url):
     # get xml object from the internet
@@ -164,9 +167,22 @@ def get_forecast_data():
     xml_root = get_xml_root(url='https://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=rmdv2&output=xml')
     return get_flood_data(xml_root, "forecast")
 
-def get_mins_from_midnight():
-    now = datetime.datetime.now()
-    return (now.hour * 60) + now.minute
+def get_mins_from_midnight(alt_time=None):
+    if alt_time:
+        return (alt_time.hour * 60) + alt_time.minute
+    else:
+        now = datetime.datetime.now()
+        return (now.hour * 60) + now.minute
+
+def get_gradient(n, sunrise, sunset, red, yellow, black):
+    # color={"ranges":{"red":[0,1],"yellow":[2,11],"red":[11,12]}},
+    sunrise = get_mins_from_midnight(alt_time=sunrise)
+    sunset = get_mins_from_midnight(alt_time=sunset)
+    end = 24 * 60
+    return 'linear-gradient(90deg, rgba(206,255,0,1) 0%, rgba(9,9,121,1) 29%, rgba(0,212,255,1) 100%);'
+    
+
+    
 
 
 def get_custom_graph():
@@ -183,7 +199,7 @@ def convert_utc_est(utc):
     from_zone = tz.gettz('UTC')
     to_zone = tz.gettz('America/New_York')
     utc = utc.replace(tzinfo=from_zone)
-    return utc.astimezone(to_zone).strftime('%b. %d, %Y %I:%M %p')
+    return utc.astimezone(to_zone)
 
 def get_time():
     time = datetime.datetime.now().strftime('%I:%M')

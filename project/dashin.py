@@ -1,6 +1,8 @@
 import dash
+from dash_bootstrap_components._components.Row import Row
 import dash_html_components as html
 import dash_daq as daq
+from dash_html_components.Colgroup import Colgroup
 import plotly
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -325,6 +327,7 @@ children=[
 
             ####################_sunrise_#############################################
             dbc.Row([
+               
                 dbc.Col(html.Div(
                     id='sunrise',
                     style={
@@ -336,14 +339,32 @@ children=[
                         'margin': '0% 0% 0% 0%',
                     },
                 ),width=3),
+
+
                 ####################_sunrise_#############################################
+                dbc.Col(
+                    id='gradient1', 
+                    width=3, 
+                    style={
+                        'background': app_colors['black'],
+                        'background': f'linear-gradient(90deg, #000000 10%, {app_colors["red"]} 25%, rgba(0,212,255,1) 65%)',
+                        # 'position': 'absolute',
+                        },
+                ),
 
-                dbc.Col(html.Div(
-                    id='sun-gauge',
-                ),width=6),
+                
+            
 
-                ####################_sunset_##############################################
-                dbc.Col(html.Div(
+                dbc.Col(
+                    id='gradient2', 
+                    width=3, 
+                    style={
+                        'background': app_colors['red'],
+                        'background': f'linear-gradient(90deg, rgba(0,212,255,1) 35%, {app_colors["red"]} 75%, #000000  90%)',
+                    },
+                ),
+
+                 dbc.Col(html.Div(
                     id='sunset',
                     style={
                         'color': app_colors['red'],
@@ -354,21 +375,47 @@ children=[
                         'margin': '0% 0% 0% 0%',
                     },
                 ),width=3),
-            ####################_sunset_##############################################
+                    
+
+
+
+
+                ]),
+
+                ####################_sunset_##############################################
+                dbc.Row([
+                    dbc.Col(width=3),
+
+                    dbc.Col(
+                        children= [
+                                daq.Slider(
+                                min=0, 
+                                max=100, 
+                                value=30,
+                                marks={'25': 'mark', '50': '50'}, 
+                                size=GetSystemMetrics(0) * .126,
+                            )
+                        ],
+                        width=6,
+                        style={
+                            'align-items': 'left',
+                            'padding': 0,
+                        },
+                    ),
+
+                    dbc.Col(width=3),
+
+
+                ]),
+                ####################_sunset_##############################################
+
             ]),
+        
 
-             
-      
+    
+        ],),
 
-        ],
-        width={'size':3, 'offset':0},
-        style={
-            'color': app_colors['blue'],
-        },
-        ),
-    ],
-    ),    
-])
+],)   
 
 ##################################################################################################################################
 ##################################################################################################################################
@@ -525,7 +572,6 @@ def update_flood_graph(interval):
     Output(component_id='weather-code', component_property='children'), 
     Output(component_id='wind-gust', component_property='children'),   
     Output(component_id='wind-speed', component_property='children'),  
-    Output(component_id='sun-gauge', component_property='children'),  
     ],
     [Input(component_id='flood-update-interval', component_property='interval')]
 )
@@ -547,21 +593,13 @@ def update_output_div(interval):
         str(data['long']) + "\N{DEGREE SIGN}" + ")",
         "updated: " + str(data['obs_time']),
         "Precipitation: " + str(data['precipitation_type_value']),
-        [html.Div("Sunset:"), html.Div(str(data['sunset_value']))],
-        [html.Div("Sunrise:"), html.Div(str(data['sunrise_value']))],
+        [html.Div("Sunset:"), html.Div(convert_datetime_to_formatted_str(data['sunset_value'], date=False))],
+        [html.Div("Sunrise:"), html.Div(convert_datetime_to_formatted_str(data['sunrise_value'], date=False))],
         "Visibility: " + str(data['visibility_value']) + str(data['visibility_units']),
         "Weather: " + str(data['weather_code_value']),
         "Top Wind Gust: " + str(data['wind_gust_value']) + str(data['wind_gust_value']),
         "Wind Speed: " + str(data['wind_speed_value']) + str(data['wind_speed_value']),
-        daq.GraduatedBar(
-            color={"ranges":{"red":[0,1],"yellow":[2,11],"red":[11,12]}},
-            showCurrentValue=True,
-            value=get_mins_from_midnight(),
-            max=24*60, # minutes in a 12 hour period
-        ) 
     )
-
-
 
 
 @app.callback(
