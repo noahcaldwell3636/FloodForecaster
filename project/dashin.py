@@ -41,7 +41,7 @@ external_stylesheets = [dbc.themes.BOOTSTRAP]
 observed_data = get_observed_data()
 forecast_data = get_forecast_data()
 forecast_data = bridge_to_fore(observed_data, forecast_data)
-most_recent_clima_data = get_forecast_data()
+most_recent_clima_data = get_climacell_data()
 
 
 ##################################################################################
@@ -347,7 +347,14 @@ children=[
                     width=3, 
                     style={
                         'background': app_colors['black'],
-                        'background': f'linear-gradient(90deg, #000000 10%, {app_colors["red"]} 25%, rgba(0,212,255,1) 65%)',
+                        'background': get_gradient(
+                            1, 
+                            most_recent_clima_data['sunrise_value'], 
+                            most_recent_clima_data['sunset_value'], 
+                            app_colors['red'], 
+                            'yellow', 
+                            'black'
+                        ),
                         # 'position': 'absolute',
                         },
                 ),
@@ -360,7 +367,14 @@ children=[
                     width=3, 
                     style={
                         'background': app_colors['red'],
-                        'background': f'linear-gradient(90deg, rgba(0,212,255,1) 35%, {app_colors["red"]} 75%, #000000  90%)',
+                        'background': get_gradient(
+                            2, 
+                            most_recent_clima_data['sunrise_value'], 
+                            most_recent_clima_data['sunset_value'],
+                            app_colors['red'], 
+                            'yellow', 
+                            'black'                            
+                        ),
                     },
                 ),
 
@@ -390,9 +404,13 @@ children=[
                         children= [
                                 daq.Slider(
                                 min=0, 
-                                max=100, 
-                                value=30,
-                                marks={'25': 'mark', '50': '50'}, 
+                                max=24*60, 
+                                value=get_mins_from_midnight(),
+                                marks={
+                                    f'{int(24*60/4)}':'6AM', 
+                                    f'{int(24*60/2)}': 'Noon',
+                                    f'{int(24*60/4) * 3}': '6PM',
+                                }, 
                                 size=GetSystemMetrics(0) * .126,
                             )
                         ],
@@ -593,8 +611,8 @@ def update_output_div(interval):
         str(data['long']) + "\N{DEGREE SIGN}" + ")",
         "updated: " + str(data['obs_time']),
         "Precipitation: " + str(data['precipitation_type_value']),
-        [html.Div("Sunset:"), html.Div(convert_datetime_to_formatted_str(data['sunset_value'], date=False))],
-        [html.Div("Sunrise:"), html.Div(convert_datetime_to_formatted_str(data['sunrise_value'], date=False))],
+        [html.Div("Sunrise"), html.Div(convert_datetime_to_formatted_str(data['sunrise_value'], date=False))],
+        [html.Div("Sunset"), html.Div(convert_datetime_to_formatted_str(data['sunset_value'], date=False))],
         "Visibility: " + str(data['visibility_value']) + str(data['visibility_units']),
         "Weather: " + str(data['weather_code_value']),
         "Top Wind Gust: " + str(data['wind_gust_value']) + str(data['wind_gust_value']),

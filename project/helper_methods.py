@@ -179,9 +179,13 @@ def get_gradient(n, sunrise, sunset, red, yellow, black):
     sunrise = get_mins_from_midnight(alt_time=sunrise)
     sunset = get_mins_from_midnight(alt_time=sunset)
     end = 24 * 60
-    return 'linear-gradient(90deg, rgba(206,255,0,1) 0%, rgba(9,9,121,1) 29%, rgba(0,212,255,1) 100%);'
-    
-
+    # f'linear-gradient(90deg, #000000 10%, {app_colors["red"]} 25%, rgba(0,212,255,1) 65%)'
+    if n == 1:
+        sunrise_percent = int((sunrise / end) * 100) + 25
+        return f'linear-gradient(90deg, #000000 {sunrise_percent - 15}%, {red} {sunrise_percent}%, rgba(0,212,255,1) {sunrise_percent + 40}%)'
+    elif n == 2:
+        sunset_percent = int((sunset / end) * 100) - 25
+        return f'linear-gradient(90deg, rgba(0,212,255,1) {sunset_percent - 40}%, {red} {sunset_percent}%, #000000  {sunset_percent + 15}%)'
     
 
 
