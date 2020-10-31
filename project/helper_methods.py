@@ -1,9 +1,11 @@
 from urllib.request import urlopen
 import xml.etree.ElementTree as ET
 import datetime
+from dateutil import tz
 import pandas as pd
 from win32api import GetSystemMetrics
 from climacell_api.client import ClimacellApiClient
+
 
 
 def convert_str_to_datetime(datetime_str):
@@ -81,22 +83,22 @@ def bridge_to_fore(observed_df, filled_forecast_df):
     return joint_bridge_forecast
 
 
-def fill_missing_time(time):
+def fill_missing_time(given_time):
     """ Adds filler points to the forecast plot to account for the data being
     in 6 hour intervals instead of 15 minute intrevals like the observed plot.
     Allows the time and plot size to be consistent amongst the two plots. 
 
     @param time - list of datetimes
     """
-    adjusted_time = []
-    for sixhr_interval in time:
-        adjusted_time.append(sixhr_interval)
-        fill_interval = sixhr_interval + datetime.timedelta(minutes=15)
-        adjusted_time.append(fill_interval)
-        for i in range(23):
-            fill_interval = fill_interval + datetime.timedelta(minutes=15)
-            adjusted_time.append(fill_interval)
-    return adjusted_time
+    adjusted_times = []
+    for i in range(len(given_time)-1):
+        adjusted_times.append(given_time[i])
+        fill_time = given_time[i] + datetime.timedelta(minutes=15)
+        adjusted_times.append(fill_time)
+        while fill_time < given_time[i+1]:
+            fill_time = fill_time + datetime.timedelta(minutes=15)
+            adjusted_times.append(fill_time)
+    return adjusted_times
 
 
 def fill_missing_levels(levels):
@@ -172,11 +174,23 @@ def get_custom_graph():
     return fig
 
 
+def convert_utc_est(utc):
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.gettz('America/New_York')
+    utc = utc.replace(tzinfo=from_zone)
+    return utc.astimezone(to_zone).strftime('%b. %d, %Y %I:%M %p')
 
+def get_time():
+    time = datetime.datetime.now().strftime('%I:%M')
+    if time[0] == '0':
+        return time[1:]
+    return time
 
+def get_time_postfix():
+    return datetime.datetime.now().strftime('%p')
 
-
-
+def get_date():
+    return datetime.datetime.now().strftime('%x')
 
 def get_climacell_data():
     key = "96Sx5iofKooIKqeBycfPBZfAmOTSnUa1"
@@ -209,7 +223,7 @@ def get_climacell_data():
         return temp_c
 
     return {
-        'obs_time': rt_data.observation_time,
+        'obs_time': convert_utc_est(rt_data.observation_time),
         'lat': rt_data.lat,
         'long': rt_data.lon,
         'temp_value': convert_to_farhrenheit(rt_measurements['temp'].value),
@@ -227,8 +241,8 @@ def get_climacell_data():
         'precipitation_value': rt_measurements['precipitation'].value,
         'precipitation_units': rt_measurements['precipitation'].units,
         'precipitation_type_value': rt_measurements['precipitation_type'].value,
-        'sunrise_value': rt_measurements['sunrise'].value,
-        'sunset_value': rt_measurements['sunset'].value,
+        'sunrise_value': convert_utc_est(convert_str_to_datetime(rt_measurements['sunrise'].value)),
+        'sunset_value': convert_utc_est(convert_str_to_datetime(rt_measurements['sunset'].value)),
         'visibility_value': rt_measurements['visibility'].value,
         'visibility_units': rt_measurements['visibility'].units,
         'cloud_cover_value': rt_measurements['cloud_cover'].value,
@@ -243,5 +257,3 @@ if __name__ == "__main__":
     observed_data = get_flood_data(xml_root, 'observed')
     filled_forecast_data = get_flood_data(xml_root, 'forecast')
     bridge_data = bridge_to_fore(observed_data, filled_forecast_data)  
-    get_climacell_data()
-    print(observed_data, result, filled_forecast_data)

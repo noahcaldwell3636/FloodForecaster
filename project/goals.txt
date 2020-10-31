@@ -4,11 +4,16 @@ OBJECTIVES:
 #####################################################################################
 13. make the y-axis tick by 1ft increments
 14. make the static value for the 'record' plot attached to the value provided by the xml on the web
-16. (no data?) display current turbidity on flood graph
 
 18. make all widgets and element sizes a percentage, to help aid with different screen sizes
 19. update the style of all widgets somewhere other than layout to reduce complexity.
-
+20. look into replacing the legend with graph annotations (would require a y-axis anchor)
+21. get precipitation probability for the next 48 hours, accoompanied with the hourly precipitation type
+22. get the precipitation proability for the next 6 days
+23. get the daily preciptiation accumulation
+24. get the realtime moon phase
+25. provide air quality data
+26. fire hazard index
 
 
 FINISHED:

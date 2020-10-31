@@ -3,12 +3,12 @@ import dash_html_components as html
 import dash_daq as daq
 import plotly
 import dash_bootstrap_components as dbc
+import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import plotly.io as pio
 # MY IMPORTS
 from helper_methods import *
-from layout import *
 
 
 ################################################################################
@@ -16,7 +16,7 @@ from layout import *
 ################################################################################
 app_colors = {
     'black': '#232931',
-    'grey': '#393e46',
+    'grey': '#807875',
     'green': '#41aea9',
     'white': "#eeeeee",
     'blue': '#16697a',
@@ -52,7 +52,12 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 
 ########### LAYOUT ######################
-app.layout = html.Div([
+app.layout = html.Div(
+style={
+    'background-color': app_colors['black'],
+    'margin': 0,
+},
+children=[
 
     dcc.Interval(
             id='flood-update-interval',
@@ -86,11 +91,12 @@ app.layout = html.Div([
                 html.Div(
                     id='latitude',
                     style={
-                        'color': 'rgba(0,0,0,.3)',
+                        'color': app_colors['grey'],
                         'display': 'inline-block',
-                        'font-size': '200%',
-                        # 'padding-left': '25%',
+                        'font-size': '130%',
                         'background-color': app_colors['black'],
+                        'width': 'auto',
+                        'text-align': 'right',
                     },
                 ),
                 ##########LATITUDE##################
@@ -99,26 +105,48 @@ app.layout = html.Div([
                 html.Div(
                     id='longitude',
                     style={
-                        'color': 'rgba(0,0,0,.3)',
+                        'color': app_colors['grey'],
                         'display': 'inline-block',
-                        'font-size': '200%',
+                        'font-size': '130%',
+                        'width': '50%',
                         'background-color': app_colors['black'],
+                        'text-align': 'left',
                     },
                 ),
                 ##########LATITUDE##################
-            ]),
+
+                html.Div(
+                    id='obs_time',
+                    style={
+                        'color': app_colors['grey'],
+                        'font-size': '130%',
+                        'background-color': app_colors['black'],
+                        'padding-bottom': '3%'
+                    },
+                ),
+                
+            ],
+            ),
             ####################_COORDINATES_######################################
 
+            ####################_Clock_############################################
+             
+            ####################_Clock_############################################
+
             ####################_Temperature_######################################
-            dbc.Row(html.Div(
+            dbc.Row(html.P(
                 id='temp',
                 style={
                     'color': app_colors['red'],
                     'font-size': '8em',
                     'font-weight': 900,
                     'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
-                    'background-color': app_colors['black'],
-                    'text-align': 'center',
+                    # 'background-color': app_colors['black'], # allows overlapping to deal with spacing 
+                    'margin-top': '-8%',
+                    'margin-bottom': '-7%',
+                    'z-index': 0,
+                    'margin-left': 'auto',
+                    'margin-right': 'auto',
                 },
             ),),
             ####################_Temperature_######################################
@@ -127,12 +155,13 @@ app.layout = html.Div([
             dbc.Row(html.Div(
                 id='feels-like',
                 style={
-                    'color': app_colors['red'],
-                    'font-size': '2em',
+                    'color': app_colors['grey'],
+                    'font-size': '1.5em',
                     'font-weight': 900,
                     'text-shadow': '0.02em 0.02em 0 ' + app_colors['blue'], 
                     'background-color': app_colors['black'],
-                    'text-align': 'center',
+                    'margin-left': 'auto',
+                    'margin-right': 'auto',
                 },
             ),),
             ####################_Feels like temperature_###################################
@@ -192,20 +221,6 @@ app.layout = html.Div([
                 },
             ),),
             ####################_humidity_############################################
-
-            ####################_last_update_#########################################
-            dbc.Row(html.Div(
-                id='obs_time',
-                style={
-                    'color': app_colors['red'],
-                    'font-size': '2em',
-                    'font-weight': 900,
-                    'background-color': app_colors['black'],
-                    'text-align': 'center',
-                    'margin': '0% 0% 0% 0%',
-                },
-            ),),
-            ####################_last_update_#########################################
 
 
             ####################_percip_type_#########################################
@@ -293,6 +308,52 @@ app.layout = html.Div([
                 },
             ),),
             ####################_wind_speed_######################################
+
+
+            dbc.Row([
+                # clock LED display
+                daq.LEDDisplay(
+                    id='current-time',
+                    value=str(get_time()),
+                    backgroundColor = app_colors['black'],
+                    color=app_colors['red'],
+                    style={
+                        'background-color': app_colors['black']
+                    },
+                ),
+                # Am or Pm display
+                html.Div(
+                    id='time-postfix',
+                    style={
+                        'color': app_colors['red'],
+                        'font-size': '3em',
+                        'font-weight': 900,
+                        'margin-top': 'auto',
+                        'margin-bottom': 'auto',
+                        'background-color': app_colors['black'],
+                        'z-index': 1,
+                    },
+                ),
+                # date display
+                html.Div(
+                    id='date-display',
+                    style={
+                        'color': app_colors['red'],
+                        'font-size': '3em',
+                        'font-weight': 900,
+                        'margin-top': 'auto',
+                        'margin-bottom': 'auto',
+                        'padding-left': '5%',
+                        'background-color': app_colors['black'],
+                        'z-index': 1,
+                    },
+                ),
+            ],
+            ),      
+
+
+
+
         ],
         width={'size':3, 'offset':0},
         style={
@@ -300,28 +361,15 @@ app.layout = html.Div([
         },
         ),
     ],
-    ),
+    ),    
+])
 
-    
-    
+##################################################################################################################################
+##################################################################################################################################
+##################################_CALLBACKS_#####################################################################################
+##################################################################################################################################
+##################################################################################################################################
 
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    ]
-)
-
-
-##################################################################################
-##################################_CALLBACKS_#####################################
-##################################################################################
 
 @app.callback(
     Output(component_id='flood-graph', component_property='figure'),
@@ -480,6 +528,7 @@ def update_output_div(interval):
         most_recent_clima_data = data
     except:
         data = most_recent_clima_data
+        raise ValueError('ClimaCell may be providing DataErrors')
 
     return (
         str(round(data['temp_value'], 1)) + " " + str(data['temp_units']),
@@ -487,9 +536,9 @@ def update_output_div(interval):
         "Cloud Cover: " + str(data['cloud_cover_value']) + str(data['cloud_cover_units']),
         "Feels Like: " + str(round(data['feels_like_value'], 1)) + str(data['feels_like_units']),
         "Humidity: " + str(data['humidity_value']) + str(data['humidity_units']),
-        str(data['lat']) + "\N{DEGREE SIGN},",
-        str(data['long']) + "\N{DEGREE SIGN}",
-        "Last Updated: " + str(data['obs_time']),
+        "(" + str(data['lat']) + "\N{DEGREE SIGN},",
+        str(data['long']) + "\N{DEGREE SIGN}" + ")",
+        "updated: " + str(data['obs_time']),
         "Precipitation: " + str(data['precipitation_type_value']),
         "Sunset: " + str(data['sunset_value']),
         "Sunrise: " + str(data['sunrise_value']),
@@ -500,6 +549,25 @@ def update_output_div(interval):
     )
 
 
+@app.callback(
+    [
+    Output(component_id='current-time', component_property='children'),
+    Output(component_id='time-postfix', component_property='children'),
+    Output(component_id='date-display', component_property='children'),
+    ],
+    [Input(component_id='flood-update-interval', component_property='interval')]
+)
+def update_output_div(interval):
+    return get_time(), get_time_postfix(), get_date()
+
+
+
+
+############################################################################################################################################
+############################################################################################################################################
+#########################################_MAIN_#############################################################################################
+############################################################################################################################################
+############################################################################################################################################
 
 if __name__ == '__main__':
     app.run_server(debug=True,port=6969)
