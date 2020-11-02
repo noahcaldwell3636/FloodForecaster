@@ -1,4 +1,5 @@
 from helper_methods import *
+import dash_html_components as html
 
 
 app_colors = {
@@ -221,6 +222,7 @@ def get_gradient2_style(clima_data):
             'yellow', 
             'black'                            
         ),
+        'padding': 0,
     }
 
 
@@ -234,3 +236,35 @@ def get_sunset_style():
         'float': 'right',
     }
 
+def get_sun_row_style():
+    return {
+        # 'border': '.5em solid black',
+        # 'border-radius': '.25em',
+        'margin': 0,
+    }
+
+
+
+
+
+
+
+
+
+
+######################################################################
+# DECORATORS
+
+def give_hours_axis(child):
+
+    
+
+    return html.Div(
+            children=[child],
+            style={
+                'padding': '1rem',
+                'position': 'relative',
+                'background': 'black',
+            }
+        )
+    

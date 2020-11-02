@@ -190,42 +190,44 @@ children=[
 
             ],), # end time/date row
 
-            dbc.Row([ # -->>> sunrise/set slider
-                
-                ################ first half of the gradient background###################
-                dbc.Col(
-                    id='gradient1', 
-                    width=6, 
-                    style=get_gradient1_style(most_recent_clima_data),
-                    children=[
-
-                        ################ time slider ###################
-                        html.Div(
-                            id='time-slider',   
-                            style=get_time_slider_style(),                  
-                        ),
-
-                        ################ sunrise time display text ###################
-                        html.Div(
-                            id='sunrise',
-                            style=get_sunrise_style(),
-                        ),
-                    ],
-                ), # end first half of row
-
-            dbc.Col(
-                id='gradient2', 
-                width=6, 
-                style=get_gradient2_style(most_recent_clima_data),
+            give_hours_axis(dbc.Row( # -->>> sunrise/set slider
+                style=get_sun_row_style(),
                 children=[
-                    html.Div(
-                        id='sunset',
-                        style=get_sunset_style(),
-                    ),
-                ]
-            ), # end 
+                    ################ first half of the gradient background###################
+                    dbc.Col(
+                        id='gradient1', 
+                        width=6, 
+                        style=get_gradient1_style(most_recent_clima_data),
+                        children=[
 
-            ]), # end sun rise/set row childeren
+                            ################ time slider ###################
+                            html.Div(
+                                id='time-slider',   
+                                style=get_time_slider_style(),                  
+                            ),
+
+                            ################ sunrise time display text ###################
+                            html.Div(
+                                id='sunrise',
+                                style=get_sunrise_style(),
+                            ),
+                        ],
+                    ), # end first half of row
+
+                    dbc.Col(
+                        id='gradient2', 
+                        width=6, 
+                        style=get_gradient2_style(most_recent_clima_data),
+                        children=[
+                            html.Div(
+                                id='sunset',
+                                style=get_sunset_style(),
+                            ),
+                        ]
+                    ), # end second half of row
+
+                ] # end row children
+            ),) # end sun rise/set row
         ]),
     ],),
 ],)   
@@ -512,7 +514,7 @@ def update_time_slider(n):
                         'color': app_colors['red'],
                         'font-size': '1em',
                         'font-weight': 900,
-                        'text-align': 'left',
+                        'text-align': 'center',
                         'position': 'absolute',
                         'top': 0,
                         'right': 0,
