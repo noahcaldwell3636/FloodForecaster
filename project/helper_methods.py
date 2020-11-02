@@ -29,13 +29,28 @@ def convert_str_to_datetime(datetime_str):
 
 
 def convert_datetime_to_formatted_str(dt, date=True):
+    """
+    Args:
+        dt ([datetime.datetime object]): [datime obj you want shown as a string]
+        date (bool, optional): []. Defaults to True.
+
+    Returns:
+        [type]: [description]
+    """
     if date:
-        return dt.strftime('%Y-%m-%d %I:%M:%S %p')
+        return dt.strftime('%Y-%m-%d %I:%M %p')
     else:
         return dt.strftime('%I:%M %p')
 
+
 def get_xml_root(url):
-    # get xml object from the internet
+    """
+    Args:
+        url ([string]): The url to the xml page one the NOAA website.
+
+    Returns:
+        [xml root object]: an xml root object that can be parsed with the 'ET' module.
+    """
     data_page = urlopen(url)
     xml_doc = ET.parse(data_page)
     return xml_doc.getroot()
@@ -174,6 +189,7 @@ def get_mins_from_midnight(alt_time=None):
         now = datetime.datetime.now()
         return (now.hour * 60) + now.minute
 
+
 def get_gradient(n, sunrise, sunset, red, yellow, black):
     # color={"ranges":{"red":[0,1],"yellow":[2,11],"red":[11,12]}},
     sunrise = get_mins_from_midnight(alt_time=sunrise)
@@ -186,7 +202,7 @@ def get_gradient(n, sunrise, sunset, red, yellow, black):
     elif n == 2:
         sunset_percent = int((sunset / end) * 100) - 25
         return f'linear-gradient(90deg, rgba(0,212,255,1) {sunset_percent - 40}%, {red} {sunset_percent}%, #000000  {sunset_percent + 15}%)'
-    
+  
 
 
 def get_custom_graph():
@@ -230,8 +246,6 @@ def get_climacell_data():
         'baro_pressure',
         'precipitation',
         'precipitation_type',
-        # 'precipitation_probability',
-        # 'precipitation_accumulation',
         'sunrise',
         'sunset',
         'visibility',
@@ -239,7 +253,40 @@ def get_climacell_data():
         'weather_code',
     ])
     rt_data = rt.data()
-    rt_measurements = rt_data.measurements
+
+    # Sometimes Clima cell gives data errors this try-except statement
+    # will use the most recent data it did fetch. This will return a dictionary 
+    # with dumby data so development can continue
+    try:
+        rt_measurements = rt_data.measurements
+    except AttributeError as e:
+        return {
+            'obs_time': datetime.datetime(year=1950, month=1, day=1, hour=1, minute=0),
+            'lat': 0.0,
+            'long': 0.0,
+            'temp_value': 0.0,
+            'temp_units': ' error',
+            'feels_like_value': 0.0,
+            'feels_like_units': ' error',
+            'humidity_value': 0.0,
+            'humidity_units': 'update errors',
+            'wind_speed_value': 0.0,
+            'wind_speed_units': 'update errors',
+            'wind_gust_value': 0.0,
+            'wind_gust_units': 'update errors',
+            'baro_pressure_value': 0.0,
+            'baro_pressure_units': 'update errors',
+            'precipitation_value': 0.0,
+            'precipitation_units': 'update errors',
+            'precipitation_type_value': 0.0,
+            'sunrise_value': datetime.datetime(year=1950, month=1, day=1, hour=7),
+            'sunset_value': datetime.datetime(year=1950, month=1, day=1, hour=19), 
+            'visibility_value': 0.0,
+            'visibility_units': 'update errors',
+            'cloud_cover_value': 0.0,
+            'cloud_cover_units': 'update errors',
+            'weather_code_value': 0.0,
+        }
 
     def convert_to_farhrenheit(temp_c):
         temp_c /= 5
@@ -282,5 +329,4 @@ if __name__ == "__main__":
     observed_data = get_flood_data(xml_root, 'observed')
     filled_forecast_data = get_flood_data(xml_root, 'forecast')
     bridge_data = bridge_to_fore(observed_data, filled_forecast_data)  
-
     clima_data = get_climacell_data()
