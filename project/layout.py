@@ -70,7 +70,6 @@ def get_weather_code_style():
         'font-size': '2em',
         'font-weight': 900,
         'background-color': app_colors['black'],
-        'text-align': 'center',
     }
 
 
@@ -80,7 +79,6 @@ def get_cloud_cover_style():
         'font-size': '2em',
         'font-weight': 900,
         'background-color': app_colors['black'],
-        'text-align': 'center',
     }
 
 
@@ -90,7 +88,6 @@ def get_barometer_style():
         'font-size': '2em',
         'font-weight': 900,
         'background-color': app_colors['black'],
-        'text-align': 'center',
     }
 
 def get_humidity_style():
@@ -99,8 +96,6 @@ def get_humidity_style():
         'font-size': '2em',
         'font-weight': 900,
         'background-color': app_colors['black'],
-        'text-align': 'center',
-        'margin': '0% 0% 0% 0%',
     },
 
 def get_precipitation_type_style():
@@ -109,8 +104,6 @@ def get_precipitation_type_style():
         'font-size': '2em',
         'font-weight': 900,
         'background-color': app_colors['black'],
-        'text-align': 'center',
-        'margin': '0% 0% 0% 0%',
     }
 
 def get_visability_style():
@@ -119,8 +112,6 @@ def get_visability_style():
         'font-size': '2em',
         'font-weight': 900,
         'background-color': app_colors['black'],
-        'text-align': 'center',
-        'margin': '0% 0% 0% 0%',
     }
 
 def get_wind_gust_style():
@@ -145,7 +136,8 @@ def get_wind_speed_style():
 
 def get_current_time_style():
     return {
-        'background-color': app_colors['black']
+        'background-color': 'black',
+        'margin-left': 'auto',
     }
 
 
@@ -154,10 +146,13 @@ def get_time_postfix_style():
         'color': app_colors['red'],
         'font-size': '3em',
         'font-weight': 900,
-        'margin-top': 'auto',
-        'margin-bottom': 'auto',
-        'background-color': app_colors['black'],
+        'margin-top': '3%',
+        'margin-bottom': '3%',
+        'margin-left': '1%',
+        'margin-right': 'auto',
+        'background-color': 'black',
         'z-index': 1,
+        
     }
 
 def get_date_display_style():
@@ -176,8 +171,57 @@ def get_date_display_style():
 
 
 
+
+
+def get_time_slider_style(percent=0):
+    return {
+        'background': 'grey',
+        'left': f'{int(get_mins_from_midnight() / (24 * 60))}%',
+        'padding': 0,
+        'grid-row-start': 1,
+        'grid-column-start': 1,
+        'position': 'relative',
+        'background': 'yellow',
+        'width': '2px',
+        'height': '45px',
+        'margin-left': f'{percent * 2}%',
+        'padding': 0,
+    }
+
+
+
+def get_sunrise_style():
+    return {
+        'color': app_colors['red'],
+        'font-size': '1em',
+        'font-weight': 900,
+        'text-align': 'center',
+        'position': 'absolute',
+        'float': 'left'
+    }
+
+def get_sunrise_text_style():
+    return {
+        'float': 'left',
+    }
+
+
+def get_sunset_style():
+    return {
+        'color': app_colors['red'],
+        'font-size': '1em',
+        'font-weight': 900,
+        'text-align': 'center',
+        'float': 'right',
+        'position': 'relative',
+        'top': 0,
+        'left': 0,
+    }
+
+
 def get_gradient1_style(clima_data):
     return {
+        # creates a gradient background
         'background': app_colors['black'],
         'background': get_gradient(
             1, 
@@ -187,29 +231,13 @@ def get_gradient1_style(clima_data):
             'yellow', 
             'black'
         ),
-        'padding-left': 0,
-        'padding-right': 0,
-    }
-
-def get_time_slider_style():
-    return {
-        'background': 'yellow',
-        'width': '5px',
-        'height': '45px',
-        'margin-left': f'{int(get_mins_from_midnight() / (24 * 60))}%',
+        # no padding to keep proportions
         'padding': 0,
+        # grid layout to allow for overlapping
+        'display': 'grid',
+        'grid-template-columns': '1fr',
     }
 
-def get_sunrise_style():
-    return {
-        'color': app_colors['red'],
-        'font-size': '1em',
-        'font-weight': 900,
-        'text-align': 'center',
-        'float': 'left',
-        'position': 'absolute',
-        'z-index': '100',
-    }
 
 def get_gradient2_style(clima_data):
     return {
@@ -226,15 +254,7 @@ def get_gradient2_style(clima_data):
     }
 
 
-def get_sunset_style():
-    return {
-        'color': app_colors['red'],
-        'font-size': '1em',
-        'font-weight': 900,
-        'text-align': 'center',
-        'postion': 'absolute',
-        'float': 'right',
-    }
+
 
 def get_sun_row_style():
     return {
@@ -243,28 +263,47 @@ def get_sun_row_style():
         'margin': 0,
     }
 
+def get_datetime_row_style():
+    
+    return {
 
-
-
-
-
-
+    }
 
 
 
 ######################################################################
 # DECORATORS
 
-def give_hours_axis(child):
+def give_hours_axis(*children):
 
-    
+    span = html.Span(style={
+        'background-color': 'red',
+        'width': '100%',
+        'display': 'inline-block',
+    })
+
+    x_axis = html.P(
+            ["12 3 6 9 12 3 6 9 12", span], 
+            style={
+                'position': 'absolute',
+                'bottom': "7.5%",
+                'color': 'white',
+                'width': '100%',
+                'text-align': 'justify',
+                'padding-right': '2%',
+                'height': 0,
+            },   
+        )
 
     return html.Div(
-            children=[child],
+            id="border_container",
+            children = list(children) + [ x_axis, span],
             style={
-                'padding': '1rem',
+                'padding': '.3rem',
                 'position': 'relative',
                 'background': 'black',
+                'border': '.4em ridge #423d3b',
+                'text-align': 'justify',
             }
         )
     

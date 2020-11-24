@@ -9,18 +9,18 @@ from climacell_api.client import ClimacellApiClient
 
 
 
-def convert_str_to_datetime(datetime_str):
+def convert_str_to_datetime(dt: str) -> datetime.datetime:
     """ 
-    Converts datetime_str time from the xml doc to a datetime object
+    Converts datetime string from the xml doc to a datetime object.
     """
     try:
-        time = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %I:%M:%S %p")
+        time = datetime.datetime.strptime(dt, "%Y-%m-%d %I:%M:%S %p")
     except:
         try:
-            time = datetime.datetime.strptime(datetime_str[:-6], "%Y-%m-%dT%H:%M:%S")
+            time = datetime.datetime.strptime(dt[:-6], "%Y-%m-%dT%H:%M:%S")
         except:
             try:
-                time = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+                time = datetime.datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
             except:
                 raise ValueError("~Boone~ this method is meant to convert string into datetime objects, +"
                 "in the following format \n %Y-%m-%d %I:%M:%S %p \n %Y-%m-%dT%H:%M:%S")
@@ -28,43 +28,23 @@ def convert_str_to_datetime(datetime_str):
     return dt
 
 
-def convert_datetime_to_formatted_str(dt, date=True):
-    """
-    Args:
-        dt ([datetime.datetime object]): [datime obj you want shown as a string]
-        date (bool, optional): []. Defaults to True.
-
-    Returns:
-        [type]: [description]
-    """
+def format_datetime(dt: datetime.datetime, date: bool = True) -> str:
     if date:
         return dt.strftime('%Y-%m-%d %I:%M %p')
     else:
         return dt.strftime('%I:%M %p')
 
 
-def get_xml_root(url):
-    """
-    Args:
-        url ([string]): The url to the xml page one the NOAA website.
-
-    Returns:
-        [xml root object]: an xml root object that can be parsed with the 'ET' module.
-    """
+def get_xml_root(url: str) -> ET.Element:
     data_page = urlopen(url)
     xml_doc = ET.parse(data_page)
     return xml_doc.getroot()
 
 
-def bridge_to_fore(observed_df, filled_forecast_df):
-    """ 
-    Returns a pandas dataframe of fill data accounting for the gap between the 
-    end of the observed flood level data and the forecasted flood level data.
+def bridge_to_fore(observed_df: pd.DataFrame, filled_forecast_df: pd.DataFrame) -> pd.DataFrame:
+    """ Returns a pandas dataframe of fill data accounting for the gap between the 
+    end of the observed flood level data and the forecasted flood level data."""
 
-            - if patch_to_forecasted is swtched to 'True', the function will return a 
-            concatination of both the bridge data and the forecasted data. Otherwise,
-            the function will return a dataframe of just the bridge data.
-    """
     # start of data bridge = obs_last_time
     obs_last_time = str(observed_df['Time'].iloc[-1])
     obs_last_time = convert_str_to_datetime(obs_last_time)
@@ -78,7 +58,7 @@ def bridge_to_fore(observed_df, filled_forecast_df):
     # create list of all time values in the bridge
     bridge_times = []
     t = obs_last_time + datetime.timedelta(minutes=15)
-    bridge_times.append(convert_datetime_to_formatted_str(t))
+    bridge_times.append(format_datetime(t))
     for i in range(intervals-2): # minues two b/c the first and last points are included on the observed df and the orginal df
         t = t + datetime.timedelta(minutes=15)
         bridge_times.append(t)
@@ -102,7 +82,7 @@ def bridge_to_fore(observed_df, filled_forecast_df):
     return joint_bridge_forecast
 
 
-def fill_missing_time(given_time):
+def fill_missing_time(given_times: list) -> list:
     """ Adds filler points to the forecast plot to account for the data being
     in 6 hour intervals instead of 15 minute intrevals like the observed plot.
     Allows the time and plot size to be consistent amongst the two plots. 
@@ -110,17 +90,17 @@ def fill_missing_time(given_time):
     @param time - list of datetimes
     """
     adjusted_times = []
-    for i in range(len(given_time)-1):
-        adjusted_times.append(given_time[i])
-        fill_time = given_time[i] + datetime.timedelta(minutes=15)
+    for i in range(len(given_times)-1):
+        adjusted_times.append(given_times[i])
+        fill_time = given_times[i] + datetime.timedelta(minutes=15)
         adjusted_times.append(fill_time)
-        while fill_time < given_time[i+1]:
+        while fill_time < given_times[i+1]:
             fill_time = fill_time + datetime.timedelta(minutes=15)
             adjusted_times.append(fill_time)
     return adjusted_times
 
 
-def fill_missing_levels(levels):
+def fill_missing_levels(levels: list) -> list:
     adjusted_levels = []
     for i in range(len(levels)):
         current_level = float(levels[i])
@@ -141,7 +121,7 @@ def fill_missing_levels(levels):
     return adjusted_levels
 
 
-def get_flood_data(xml_root, observed_or_forecast):
+def get_flood_data(xml_root: ET.Element, observed_or_forecast: str) -> pd.DataFrame:
     xml_elements = xml_root.findall(observed_or_forecast + '/datum')
     levels = []
     time_list = []
@@ -168,21 +148,22 @@ def get_flood_data(xml_root, observed_or_forecast):
     return pd.DataFrame(data, columns=['Time', 'Level'])
 
 
-def get_screen_resolution():
+def get_screen_resolution() -> dict:
     return {"width": GetSystemMetrics(0), "height": GetSystemMetrics(1)}
 
 
-def get_observed_data():
+def get_observed_data() -> pd.DataFrame:
     # get xml object from the internet
     xml_root = get_xml_root(url='https://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=rmdv2&output=xml')
     return get_flood_data(xml_root, "observed")
 
 
-def get_forecast_data():
+def get_forecast_data() -> pd.DataFrame:
     xml_root = get_xml_root(url='https://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=rmdv2&output=xml')
     return get_flood_data(xml_root, "forecast")
 
-def get_mins_from_midnight(alt_time=None):
+
+def get_mins_from_midnight(alt_time: datetime.datetime = None) -> int:
     if alt_time:
         return (alt_time.hour * 60) + alt_time.minute
     else:
@@ -190,50 +171,47 @@ def get_mins_from_midnight(alt_time=None):
         return (now.hour * 60) + now.minute
 
 
-def get_gradient(n, sunrise, sunset, red, yellow, black):
-    # color={"ranges":{"red":[0,1],"yellow":[2,11],"red":[11,12]}},
+def get_gradient(n: int,
+                sunrise: datetime.datetime,
+                sunset: datetime.datetime,
+                red: str,
+                yellow: str,
+                black: str,
+                ) -> str:
     sunrise = get_mins_from_midnight(alt_time=sunrise)
     sunset = get_mins_from_midnight(alt_time=sunset)
     end = 24 * 60
-    # f'linear-gradient(90deg, #000000 10%, {app_colors["red"]} 25%, rgba(0,212,255,1) 65%)'
     if n == 1:
         sunrise_percent = int((sunrise / end) * 100) + 25
         return f'linear-gradient(90deg, #000000 {sunrise_percent - 15}%, {red} {sunrise_percent}%, rgba(0,212,255,1) {sunrise_percent + 40}%)'
     elif n == 2:
         sunset_percent = int((sunset / end) * 100) - 25
         return f'linear-gradient(90deg, rgba(0,212,255,1) {sunset_percent - 40}%, {red} {sunset_percent}%, #000000  {sunset_percent + 15}%)'
-  
 
 
-def get_custom_graph():
-    # Create the graph with subplots
-    fig = make_subplots(rows=1, cols=1, vertical_spacing=0.2)
-    fig['layout']['margin'] = {
-        'l': 30, 'r': 10, 'b': 30, 't': 10
-    }
-    fig['layout']['legend'] = {'x': 0, 'y': 1, 'xanchor': 'left'}
-    return fig
-
-
-def convert_utc_est(utc):
+def convert_utc_est(utc: datetime.datetime) -> datetime.datetime:
     from_zone = tz.gettz('UTC')
     to_zone = tz.gettz('America/New_York')
     utc = utc.replace(tzinfo=from_zone)
     return utc.astimezone(to_zone)
 
-def get_time():
+
+def get_time() -> str:
     time = datetime.datetime.now().strftime('%I:%M')
     if time[0] == '0':
         return time[1:]
     return time
 
-def get_time_postfix():
+
+def get_time_postfix() -> str:
     return datetime.datetime.now().strftime('%p')
 
-def get_date():
+
+def get_date() -> str:
     return datetime.datetime.now().strftime('%x')
 
-def get_climacell_data():
+
+def get_climacell_data() -> dict:
     key = "96Sx5iofKooIKqeBycfPBZfAmOTSnUa1"
     client = ClimacellApiClient(key)
     # 4700 welby turn = (37.558331, -77.639555)
@@ -288,11 +266,11 @@ def get_climacell_data():
             'weather_code_value': 0.0,
         }
 
-    def convert_to_farhrenheit(temp_c):
-        temp_c /= 5
-        temp_c *= 9
-        temp_c += 32
-        return temp_c
+    def convert_to_farhrenheit(temp_celcius: float) -> float:
+        temp_celcius /= 5
+        temp_celcius *= 9
+        temp_celcius += 32
+        return temp_celcius
 
     return {
         'obs_time': convert_utc_est(rt_data.observation_time),

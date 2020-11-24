@@ -56,6 +56,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div(
 style={
     'background-color': app_colors['black'],
+    # 'background-image': 'static/bg.png',
     'margin': 0,
 },
 children=[
@@ -66,11 +67,17 @@ children=[
             n_intervals= 0,
         ),
 
+    dcc.Interval(
+            id='time-update-interval',
+            interval= 10 * 1000,
+            n_intervals= 0,
+        ),
+
     dbc.Row([ # ->>>>>>>>>>>> FIRST ROW WITH GRAPH AND METRICS
 
         #################_FLOOD_GRAPH_###########################
         dbc.Col(
-            width=9,
+            width=8,
             children=[
                 html.Div(dcc.Graph(id='flood-graph', animate=False)),
             ],
@@ -166,70 +173,101 @@ children=[
             ),),
 
 
-            dbc.Row([ #---->> clock and date row
+            give_hours_axis(
+                dbc.Row(
+                    id='datetime_row',
+                    style=get_datetime_row_style(),
+                    children = [ #---->> clock and date row
+                    ################_Time LED_#########################
+                    daq.LEDDisplay(
+                        id='current_time',
+                        value=str(get_time()),
+                        backgroundColor = app_colors['black'],
+                        color=app_colors['red'],
+                        style=get_current_time_style(),
+                    ),
 
-                ################_Time LED_#########################
-                daq.LEDDisplay(
-                    id='current_time',
-                    value=str(get_time()),
-                    backgroundColor = app_colors['black'],
-                    color=app_colors['red'],
-                    style=get_current_time_style(),
-                ),
+                    ################_Time Postfix_#########################
+                    html.Div(
+                        id='time_postfix',
+                        style=get_time_postfix_style(),
+                    ),
+                    ###############_Date Display_#########################
+                    # html.Div(
+                    #     id='date-display',
+                    #     style=get_date_display_style(),
+                    # ),
 
-                ################_Time Postfix_#########################
-                html.Div(
-                    id='time_postfix',
-                    style=get_time_postfix_style(),
-                ),
-                ################_Date Display_#########################
-                html.Div(
-                    id='date-display',
-                    style=get_date_display_style(),
-                ),
+                ],), # end time/date row
 
-            ],), # end time/date row
+                dbc.Row( # -->>> sunrise/set slider
+                    style=get_sun_row_style(),
+                    children=[
+                        ################ first half of the gradient background###################
+                        dbc.Col(
+                            id='gradient1', 
+                            width=6, 
+                            style=get_gradient1_style(most_recent_clima_data),
+                            children=[
 
-            give_hours_axis(dbc.Row( # -->>> sunrise/set slider
-                style=get_sun_row_style(),
-                children=[
-                    ################ first half of the gradient background###################
-                    dbc.Col(
-                        id='gradient1', 
-                        width=6, 
-                        style=get_gradient1_style(most_recent_clima_data),
-                        children=[
+                                ################ time slider ###################
+                                html.Div(
+                                    id='time-slider',   
+                                    style=get_time_slider_style(),                  
+                                ),
 
-                            ################ time slider ###################
-                            html.Div(
-                                id='time-slider',   
-                                style=get_time_slider_style(),                  
-                            ),
+                                ################ sunrise time display text ###################
+                                html.Div(
+                                    id='sunrise',
+                                    style=get_sunrise_style(),
+                                ),
+                            ],
+                        ), # end first half of row
 
-                            ################ sunrise time display text ###################
-                            html.Div(
-                                id='sunrise',
-                                style=get_sunrise_style(),
-                            ),
-                        ],
-                    ), # end first half of row
+                        dbc.Col(
+                            id='gradient2', 
+                            width=6, 
+                            style=get_gradient2_style(most_recent_clima_data),
+                            children=[
+                                html.Div(
+                                    id='sunset',
+                                    style=get_sunset_style(),
+                                ),
+                            ]
+                        ), # end second half of row
 
-                    dbc.Col(
-                        id='gradient2', 
-                        width=6, 
-                        style=get_gradient2_style(most_recent_clima_data),
-                        children=[
-                            html.Div(
-                                id='sunset',
-                                style=get_sunset_style(),
-                            ),
-                        ]
-                    ), # end second half of row
+                    ] # end row children
+                ), 
+            ) # end sun rise/set row
 
-                ] # end row children
-            ),) # end sun rise/set row
-        ]),
-    ],),
+        ]), # end of the right metrics column
+
+    ],), # end of graph and metrics row
+
+    # dbc.Row(
+    #     style={
+    #         # nothing yet!
+    #     },
+    #     children=[
+    #         html.Button(
+    #             id="debug_kill_program",
+    #             n_clicks=0,
+    #             style={
+    #                 'text': 'kill dashboard.',
+    #                 'color': 'red',
+    #             }
+    #         )
+    #     ]
+    # )
+
+
+
+
+
+
+
+
+
 ],)   
 
 ##################################################################################################################################
@@ -239,10 +277,12 @@ children=[
 ##################################################################################################################################
 
 
+
 @app.callback(
     Output(component_id='flood-graph', component_property='figure'),
     [Input('flood-update-interval', 'interval')])
 def update_flood_graph(interval):
+    print('graph-update!')
     obs_data = get_observed_data()
     obs_plot = go.Scatter(
         name='Observed Level',
@@ -253,7 +293,6 @@ def update_flood_graph(interval):
         fill='tozeroy',
         fillcolor=app_colors['blue'],
     )
-
 
     forecast_data = get_forecast_data()
     forecast_data = bridge_to_fore(observed_data, forecast_data)
@@ -331,13 +370,11 @@ def update_flood_graph(interval):
         ]
     )
 
-
-
     return {
         'data': [obs_plot, forecast_plot, zone1, zone2, zone3, zone4, zone5],
         'layout': go.Layout(
-            height=int(get_screen_resolution()['height'] * .8),
-            width=int(get_screen_resolution()['width'] * .75),
+            height=int(get_screen_resolution()['height'] * .6),
+            width=int(get_screen_resolution()['width'] * .6),
             xaxis={
                 'title': "Date",
                 'color': 'white',
@@ -368,6 +405,11 @@ def update_flood_graph(interval):
             )
         )
     }
+
+
+
+
+
 
 
 @app.callback(
@@ -403,6 +445,7 @@ def update_output_div(interval):
         data = most_recent_clima_data
         raise ValueError('ClimaCell may be providing DataErrors, we fetched the most recent dataset.')
 
+    print("climacell data update!")
     return (
         str(round(data['temp_value'], 1)) + " " + str(data['temp_units']),
         str(data['baro_pressure_value']) + " " + data['baro_pressure_units'],
@@ -413,8 +456,20 @@ def update_output_div(interval):
         str(data['long']) + "\N{DEGREE SIGN}" + ")",
         "updated: " + str(data['obs_time']),
         "Precipitation: " + str(data['precipitation_type_value']),
-        [html.Div("Sunrise"), html.Div(convert_datetime_to_formatted_str(data['sunrise_value'], date=False))],
-        [html.Div("Sunset"), html.Div(convert_datetime_to_formatted_str(data['sunset_value'], date=False))],
+        [
+            html.P(
+                "Sunrise",
+                style=get_sunrise_text_style(),    
+            ),
+            html.P(
+                format_datetime(data['sunrise_value'], date=False),
+                style=get_sunrise_text_style(),
+            ),
+        ],
+        [
+            html.Div("Sunset"), 
+            html.Div(format_datetime(data['sunset_value'], date=False))
+        ],
         "Visibility: " + str(data['visibility_value']) + str(data['visibility_units']),
         "Weather: " + str(data['weather_code_value']),
         "Top Wind Gust: " + str(data['wind_gust_value']) + str(data['wind_gust_value']),
@@ -422,18 +477,30 @@ def update_output_div(interval):
     )
 
 
+
+
+
+
+
 @app.callback(
     [
     Output(component_id='current_time', component_property='children'),
     Output(component_id='time_postfix', component_property='children'),
-    Output(component_id='date-display', component_property='children'),
+    # Output(component_id='date-display', component_property='children'),
     ],
-    [Input(component_id='flood-update-interval', component_property='interval')]
+    [Input(component_id='time-update-interval', component_property='interval')]
 )
 def update_output_div(interval):
-    return get_time(), get_time_postfix(), get_date()
+    print('time update!')
+    return get_time(), get_time_postfix(), #get_date()
 
 
+
+
+
+
+############################################################
+# update time slider on the sunset gauge
 @app.callback(
     Output(component_id='gradient1', component_property='children'),
     Output(component_id='gradient2', component_property='children'),
@@ -442,44 +509,24 @@ def update_output_div(interval):
 def update_time_slider(n):
     percent = get_mins_from_midnight() / (24 * 60)
     percent *= 100
-
+    print("slider update!")
+    # two gradients, if the day is more than half over, the 
+    # slider needs to be on the seond gradient
     if percent < 50:
         return (
             [
                 html.Div(
                     id='slider-marker',
-                    style = {
-                        'position': 'relative',
-                        'background': 'yellow',
-                        'width': '2px',
-                        'height': '45px',
-                        'margin-left': f'{percent * 2}%',
-                        'padding': 0,
-                    }
+                    style = get_time_slider_style(percent),
                 ),
                 html.Div(
                     id='sunrise',
-                    style={
-                        'color': app_colors['red'],
-                        'font-size': '1em',
-                        'font-weight': 900,
-                        'text-align': 'center',
-                        'position': 'absolute',
-                        'float': 'left',
-                    },
+                    style=get_sunrise_style(),
                 ),
             ],
             html.Div(
                     id='sunset',
-                    style={
-                        'color': app_colors['red'],
-                        'font-size': '1em',
-                        'font-weight': 900,
-                        'text-align': 'center',
-                        'position': 'absolute',
-                        'top': 0,
-                        'right': 0,
-                    },
+                    style=get_sunset_style(),
                 ),
         )
 
@@ -487,42 +534,27 @@ def update_time_slider(n):
         return (
             html.Div(
                 id='sunrise',
-                style={
-                    'color': app_colors['red'],
-                    'font-size': '1em',
-                    'font-weight': 900,
-                    'text-align': 'center',
-                    'position': 'realtive',
-                    'float': 'left',
-                },
+                style=get_sunrise_style(),
             ), 
             [
                 html.Div(
                 id='slider-marker',
-                style = {
-                    'position': 'relative',
-                    'background': 'yellow',
-                    'width': '2px',
-                    'height': '45px',
-                    'margin-left': f'{(percent - 50) * 2}%',
-                    'padding': 0,
-                },
+                style = get_time_slider_style(),
                 ),
                 html.Div(
                     id='sunset',
-                    style={
-                        'color': app_colors['red'],
-                        'font-size': '1em',
-                        'font-weight': 900,
-                        'text-align': 'center',
-                        'position': 'absolute',
-                        'top': 0,
-                        'right': 0,
-                    },
+                    style=get_sunset_style(),
                 ),
             ]
         )
     
+
+
+# # debug kill program method
+# @app.callback([Input('debug_kill_program', 'n_clicks')])
+# def on_click(n_clicks):
+#     if n_clicks != None:
+#         exit()
 
 ############################################################################################################################################
 ############################################################################################################################################
@@ -531,5 +563,5 @@ def update_time_slider(n):
 ############################################################################################################################################
 
 if __name__ == '__main__':
-    app.run_server(debug=True,port=4200)
-    print("something")
+    app.run_server(debug=True,port=6969)
+    print("Local hosting your dashboard")
